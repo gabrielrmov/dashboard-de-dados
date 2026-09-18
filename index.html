@@ -1,0 +1,1309 @@
+<title>Dashboard de Dados</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f6f5f0;
+    --surface:     #ffffff;
+    --surface-2:   #efece4;
+    --ink-1:       #17161a;
+    --ink-2:       #56545c;
+    --ink-3:       #8c8a8c;
+    --border:      rgba(23,22,26,0.11);
+    --baseline:    #cbc8bf;
+    --grid:        #e6e3db;
+    --accent:      #2454d1;
+    --accent-soft: #e7edfb;
+
+    --s-blue:    #2a78d6;
+    --s-orange:  #eb6834;
+    --s-aqua:    #1baf7a;
+    --s-yellow:  #eda100;
+    --s-magenta: #e87ba4;
+    --s-green:   #008300;
+    --s-violet:  #4a3aa7;
+    --s-red:     #e34948;
+    --pol-neutral: #a29e93;
+
+    --good: #0ca30c;
+    --warn: #c98500;
+    --critical: #d03b3b;
+
+    --font-display: "Unbounded", system-ui, sans-serif;
+    --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #101014;
+      --surface:     #1a1a20;
+      --surface-2:   #232228;
+      --ink-1:       #f4f3ef;
+      --ink-2:       #c4c1c6;
+      --ink-3:       #8a8890;
+      --border:      rgba(255,255,255,0.11);
+      --baseline:    #3c3a41;
+      --grid:        #29282e;
+      --accent:      #7396ff;
+      --accent-soft: rgba(115,150,255,0.14);
+
+      --s-blue:    #3987e5;
+      --s-orange:  #d95926;
+      --s-aqua:    #199e70;
+      --s-yellow:  #c98500;
+      --s-magenta: #d55181;
+      --s-green:   #008300;
+      --s-violet:  #9085e9;
+      --s-red:     #e66767;
+      --pol-neutral: #6e6a60;
+
+      --good: #0ca30c;
+      --warn: #dba13a;
+      --critical: #e66767;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #101014;
+    --surface:     #1a1a20;
+    --surface-2:   #232228;
+    --ink-1:       #f4f3ef;
+    --ink-2:       #c4c1c6;
+    --ink-3:       #8a8890;
+    --border:      rgba(255,255,255,0.11);
+    --baseline:    #3c3a41;
+    --grid:        #29282e;
+    --accent:      #7396ff;
+    --accent-soft: rgba(115,150,255,0.14);
+
+    --s-blue:    #3987e5;
+    --s-orange:  #d95926;
+    --s-aqua:    #199e70;
+    --s-yellow:  #c98500;
+    --s-magenta: #d55181;
+    --s-green:   #008300;
+    --s-violet:  #9085e9;
+    --s-red:     #e66767;
+    --pol-neutral: #6e6a60;
+
+    --good: #0ca30c;
+    --warn: #dba13a;
+    --critical: #e66767;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink-1);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ---------- header ---------- */
+  header.top {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+    gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 12px;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 4.6vw, 42px);
+    line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; max-width: 16ch;
+  }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 48ch; margin: 0; }
+
+  .import-block {
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 240px;
+  }
+  .file-btn {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    background: var(--surface); border: 1px solid var(--border); color: var(--ink-2);
+    padding: 9px 14px; border-radius: 7px; cursor: pointer; transition: border-color .15s ease, color .15s ease;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .file-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .file-btn input[type="file"] { display: none; }
+  .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; }
+  .source-line button {
+    background: none; border: none; color: var(--accent); font-family: var(--font-mono); font-size: 11px;
+    cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .import-error { font-size: 11.5px; color: var(--critical); text-align: right; max-width: 260px; }
+
+  button:focus-visible, select:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  /* ---------- controls ---------- */
+  .controls {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px; margin-bottom: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px;
+  }
+  .control-block { display: flex; flex-direction: column; gap: 8px; }
+  .control-block.full { grid-column: 1 / -1; }
+  .control-label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  select {
+    font-family: var(--font-body); font-size: 14.5px; font-weight: 600; color: var(--ink-1);
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
+    padding: 11px 38px 11px 14px; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'><path d='M5 8l5 5 5-5' stroke='%2356545c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+    cursor: pointer; width: 100%;
+  }
+  .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .badge {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 4px 9px; border-radius: 999px; border: 1px solid transparent;
+  }
+  .badge.quant { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .badge.qual  { background: color-mix(in oklab, var(--s-aqua) 16%, var(--surface)); color: var(--s-aqua); border-color: var(--s-aqua); }
+  .meta-n { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3); }
+
+  .segmented {
+    display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; width: fit-content;
+  }
+  .segmented button {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; padding: 9px 16px;
+    background: var(--surface); color: var(--ink-2); border: none; cursor: pointer;
+    border-right: 1px solid var(--border);
+  }
+  .segmented button:last-child { border-right: none; }
+  .segmented button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 700; }
+  .segmented button:disabled { cursor: not-allowed; opacity: 0.45; }
+  .segment-note { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+  /* ---------- layout grid ---------- */
+  .main-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; align-items: start; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px 24px; display: flex; flex-direction: column;
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 4px; }
+  .card-q { font-size: 15px; font-weight: 700; color: var(--ink-1); line-height: 1.35; margin: 0; max-width: 46ch; }
+  .card-n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); margin: 4px 0 18px; }
+
+  .export-btn {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2);
+    padding: 7px 11px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex: none;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .chart-host { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 320px; }
+  .chart-host svg { max-width: 100%; height: auto; }
+
+  .legend { display: flex; flex-direction: column; gap: 9px; }
+  .legend-row { display: flex; align-items: center; gap: 9px; font-size: 12.5px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .legend-name { color: var(--ink-1); font-weight: 600; flex: 1; }
+  .legend-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-3); font-size: 11.5px; }
+
+  /* stats card */
+  .measures {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px;
+  }
+  .measure {
+    background: var(--surface-2); border-radius: 10px; padding: 12px 12px 10px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .measure .m-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+  .measure .m-value { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--ink-1); font-variant-numeric: tabular-nums; }
+
+  table.freqtable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.freqtable th, table.freqtable td {
+    text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums;
+  }
+  table.freqtable th { color: var(--ink-3); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; font-family: var(--font-mono); }
+  table.freqtable td:not(:first-child), table.freqtable th:not(:first-child) { text-align: right; }
+  .table-scroll { overflow-x: auto; }
+
+  .formula-note {
+    font-size: 11px; color: var(--ink-3); line-height: 1.6; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border);
+  }
+
+  /* tooltip */
+  #tooltip {
+    position: fixed; pointer-events: none; background: var(--ink-1); color: var(--page);
+    font-size: 12px; line-height: 1.4; padding: 7px 10px; border-radius: 7px; max-width: 220px;
+    opacity: 0; transform: translate(-50%, -100%); transition: opacity .1s ease; z-index: 50;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22); font-family: var(--font-body);
+  }
+  #tooltip.show { opacity: 1; }
+  #tooltip b { font-weight: 700; }
+
+  footer {
+    margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--ink-3); line-height: 1.6;
+  }
+
+  @media (max-width: 920px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .controls { grid-template-columns: 1fr; }
+    header.top { align-items: flex-start; }
+    .import-block { align-items: flex-start; }
+    .import-error { text-align: left; }
+    .source-line { text-align: left; }
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<div id="tooltip"></div>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Ferramenta de análise estatística</p>
+      <h1>Dashboard de Dados</h1>
+      <p class="lede">Escolha uma pergunta, o tipo de gráfico e veja a tabela de frequência, as medidas de posição e os quartis calculados na hora — com ou sem intervalo de classe. Importe seu próprio CSV para analisar outros dados.</p>
+    </div>
+    <div class="import-block">
+      <label class="file-btn">
+        📄 Importar CSV
+        <input type="file" id="fileInput" accept=".csv,text/csv">
+      </label>
+      <div class="source-line" id="sourceLine"></div>
+      <div class="import-error" id="importError" hidden></div>
+    </div>
+  </header>
+
+  <section class="controls">
+    <div class="control-block">
+      <label class="control-label" for="colSelect">Pergunta / variável</label>
+      <select id="colSelect"></select>
+      <div class="meta-row">
+        <span class="badge" id="typeBadge"></span>
+        <span class="meta-n" id="validN"></span>
+      </div>
+    </div>
+    <div class="control-block">
+      <label class="control-label" for="chartSelect">Tipo de gráfico</label>
+      <select id="chartSelect"></select>
+      <div class="meta-row" id="groupingRow">
+        <div class="segmented" id="groupingToggle">
+          <button data-mode="raw" aria-pressed="true">Sem intervalo de classe</button>
+          <button data-mode="grouped" aria-pressed="false">Com intervalo de classe</button>
+        </div>
+      </div>
+      <p class="segment-note" id="groupingNote"></p>
+    </div>
+  </section>
+
+  <div class="main-grid">
+    <div class="card" id="chartCard">
+      <div class="card-head">
+        <div>
+          <p class="card-q" id="chartTitle"></p>
+          <p class="card-n" id="chartN"></p>
+        </div>
+        <button class="export-btn" id="exportChart">⬇ Baixar imagem</button>
+      </div>
+      <div class="chart-host" id="chartHost"></div>
+    </div>
+
+    <div class="card" id="statsCard">
+      <div class="card-head">
+        <div>
+          <p class="card-q" id="statsTitle">Tabela e medidas</p>
+          <p class="card-n" id="statsN"></p>
+        </div>
+        <button class="export-btn" id="exportStats">⬇ Baixar tabela</button>
+      </div>
+      <div id="statsHost"></div>
+    </div>
+  </div>
+
+  <footer>
+    Dados de exemplo: pesquisa "Uso das redes sociais e da internet no dia a dia", n = 16, coleta 27–31 ago 2026 — ou o CSV que você importar. Quartis (dados brutos) pelo método da posição k·n/4; classes por Sturges (k = 1 + 3,322·log₁₀n); mediana, moda (Czuber) e quartis agrupados por interpolação linear. Percentuais arredondados ao inteiro mais próximo.
+  </footer>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* =================================================================
+   1. CSV parsing
+   ================================================================= */
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  while (rows.length && rows[rows.length - 1].every(f => f.trim() === "")) rows.pop();
+  if (!rows.length) throw new Error("Arquivo vazio.");
+  const headers = rows[0].map(h => h.trim());
+  const data = rows.slice(1).filter(r => r.some(f => f.trim() !== "")).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (r[i] !== undefined ? r[i] : "").trim(); });
+    return obj;
+  });
+  if (!headers.length || !data.length) throw new Error("Não encontrei linhas de dados nesse CSV.");
+  return { headers, data };
+}
+
+function parseNumber(str) {
+  if (str === undefined || str === null) return null;
+  const s = String(str).trim().replace(/\./g, "").replace(",", ".");
+  // the line above assumes pt-BR thousand '.' / decimal ',' when a comma is present;
+  // fall back to plain parse for plain '12.5' style values with no comma
+  if (!/,/.test(str) && /^-?\d+(\.\d+)?$/.test(String(str).trim())) {
+    const n = parseFloat(str);
+    return Number.isFinite(n) ? n : null;
+  }
+  const n = parseFloat(s);
+  return Number.isFinite(n) && /^-?[\d.]+$/.test(s) ? n : null;
+}
+
+function decimalsOf(str) {
+  const m = String(str).match(/[.,](\d+)\s*$/);
+  return m ? m[1].length : 0;
+}
+
+function classifyColumn(headers, data, col) {
+  const raw = data.map(r => r[col]).filter(v => v !== undefined && v !== "");
+  const nums = raw.map(parseNumber);
+  const validNums = nums.filter(n => n !== null);
+  const isQuant = raw.length > 0 && validNums.length / raw.length >= 0.7 && validNums.length >= 3;
+  return { isQuant, total: raw.length, validCount: validNums.length };
+}
+
+/* =================================================================
+   2. Default embedded dataset
+   ================================================================= */
+const DEFAULT_CSV = `Carimbo de data/hora,Nome,Idade,Quantas horas por dia você usa a internet?,Você usa redes sociais todos os dias?,Qual dispositivo você mais usa para acessar a internet?,Você costuma usar redes sociais antes de dormir?,Você acha que passa muito tempo no celular?,Você utiliza redes sociais para estudar?,Você já comprou algo por causa de uma propaganda nas redes sociais?,Você prefere assistir vídeos curtos ou longos?,Você costuma verificar as notificações imediatamente?,Você usa redes sociais para conversar com amigos?,Você considera importante ficar um tempo sem usar o celular?,Qual aplicativo você mais abre durante o dia?,Você costuma usar o celular durante as refeições?,Você já tentou diminuir o tempo nas redes sociais?,Você acha que as redes sociais ajudam na comunicação?,Você se informa sobre notícias pelas redes sociais?,Você confia em todas as informações que vê na internet?,Você já deixou de fazer alguma atividade para ficar no celular?,Você prefere conversar pessoalmente ou por mensagens?,Você usa a internet para entretenimento?,Você utiliza mais as redes sociais durante o dia ou à noite?,Você acha difícil ficar um dia sem celular?,Você considera as redes sociais positivas ou negativas?,Você gostaria de reduzir seu tempo de tela?,Qual rede social você mais utiliza?
+27/08/2026 22:02:15,Heitor Guimarães de Carvalho ,18,6 a 8 horas,Sempre,Smartphone,Frequentemente,Definitivamente sim,Raramente,"Sim, várias vezes",Vídeos médios (5-20 min),"Sempre, imediatamente",Nunca,Neutro,TikTok,Frequentemente,"Não, mas gostaria",Muito,Frequentemente,Não confio em quase nada,"Sim, às vezes",Definitivamente pessoalmente,Frequentemente,Mais durante o dia,Muito difícil,Mais positivas que negativas,"Não, está bom assim",TikTok
+27/08/2026 23:00:03,Pedro de Paula Milhomem Amaral ,20,3 a 5 horas,Sempre,Smartphone,Sempre,Provavelmente sim,"Sim, às vezes","Sim, poucas vezes",Vídeos curtos (1-5 min),Na maioria das vezes,Ocasionalmente,Muito importante,Instagram,Às vezes,"Sim, mas foi difícil",Neutralmente,Frequentemente,Desconfio da maioria,"Sim, às vezes",Prefiro pessoalmente,Sempre,Predominantemente durante o dia,Neutro,Neutro,"Sim, um pouco",Instagram
+28/08/2026 21:59:07,Roger Vital Gomes,14,3 a 5 horas,Quase sempre (5-6 dias por semana),Smartphone,Frequentemente,Provavelmente sim,"Sim, às vezes",Talvez (não tenho certeza),Sem preferência,Na maioria das vezes,Frequentemente,Neutro,Outro,Sempre,"Não, mas gostaria",Bastante,Frequentemente,Desconfio de algumas,Raras vezes,Sem preferência,Frequentemente,Igualmente,Muito difícil,Neutro,"Sim, um pouco",Outra
+28/08/2026 22:03:20,Piero,18,3 a 5 horas,Quase sempre (5-6 dias por semana),Smartphone,Frequentemente,Provavelmente sim,Raramente,Nunca,Vídeos curtos (1-5 min),Na maioria das vezes,Frequentemente,Neutro,TikTok,Frequentemente,"Sim, mas não consegui",Bastante,Às vezes,Desconfio da maioria,"Sim, frequentemente",Prefiro pessoalmente,Frequentemente,Predominantemente durante o dia,Difícil,Neutro,"Sim, um pouco",TikTok
+28/08/2026 22:04:02,Pinto molhado,6767,Mais de 8 horas,Nunca,Todos igualmente,Sempre,Definitivamente não,"Sim, frequentemente",Prefiro não responder,Sem preferência,"Sempre, imediatamente",Frequentemente,Não é importante,Outro,Frequentemente,Não vejo necessidade,Muito,Nunca,Não confio em quase nada,"Sim, frequentemente",Sem preferência,Nunca,Igualmente,Muito fácil,Muito negativas,"Não, está bom assim",Outra
+28/08/2026 22:10:51,Jullya vitória ,17,6 a 8 horas,Sempre,Smartphone,Frequentemente,Provavelmente sim,"Sim, às vezes","Sim, várias vezes",Vídeos médios (5-20 min),Na maioria das vezes,Frequentemente,Muito importante,Instagram,Frequentemente,"Sim, mas foi difícil",Bastante,Frequentemente,Desconfio de algumas,"Sim, às vezes",Sem preferência,Frequentemente,Igualmente,Neutro,Neutro,"Sim, um pouco",Instagram
+28/08/2026 22:20:11,Isabella,18,Mais de 8 horas,Sempre,Todos igualmente,Sempre,Definitivamente sim,"Sim, frequentemente","Sim, várias vezes",Vídeos curtos (1-5 min),"Sempre, imediatamente",Frequentemente,Muito importante,TikTok,Sempre,"Sim, mas não consegui",Muito,Sempre,Desconfio de algumas,"Sim, frequentemente",Definitivamente pessoalmente,Frequentemente,Igualmente,Muito difícil,Mais positivas que negativas,"Sim, muita vontade",TikTok
+28/08/2026 22:20:55,Lucas Pazin,18,3 a 5 horas,Sempre,Smartphone,Frequentemente,Definitivamente sim,"Sim, às vezes","Sim, poucas vezes",Vídeos longos (mais de 20 min),Às vezes,Como principal meio de comunicação,Neutro,YouTube,Às vezes,Não vejo necessidade,Pouco,Às vezes,Desconfio da maioria,"Sim, às vezes",Prefiro pessoalmente,Frequentemente,Mais durante o dia,Muito difícil,Mais negativas que positivas,"Sim, um pouco",YouTube
+28/08/2026 22:35:54,,,Mais de 8 horas,Sempre,Todos igualmente,Sempre,Definitivamente sim,"Sim, às vezes","Sim, poucas vezes",Vídeos médios (5-20 min),Às vezes,Como principal meio de comunicação,Importante,YouTube,Sempre,"Sim, mas foi difícil",Muito,Sempre,Desconfio de algumas,"Sim, às vezes",Sem preferência,Sempre,Igualmente,Difícil,Mais positivas que negativas,"Sim, um pouco",YouTube
+28/08/2026 22:51:40,Carlinhos,Eu adoro cavalos,3 a 5 horas,Sempre,Smartphone,Frequentemente,Definitivamente não,"Sim, frequentemente",Talvez (não tenho certeza),Sem preferência,Na maioria das vezes,Frequentemente,Muito importante,WhatsApp,Raramente,Não vejo necessidade,Muito,Às vezes,Não confio em quase nada,"Sim, frequentemente",Definitivamente pessoalmente,Sempre,Mais à noite,Muito fácil,Mais positivas que negativas,"Não, está bom assim",WhatsApp
+28/08/2026 23:09:52,Breno Oliveira dos Santos ,17 anos ,3 a 5 horas,Às vezes (2-4 dias por semana),Smartphone,Sempre,Provavelmente sim,"Sim, frequentemente",Nunca,Sem preferência,Na maioria das vezes,Como principal meio de comunicação,Neutro,YouTube,Às vezes,"Sim, mas foi difícil",Muito,Frequentemente,Confio em algumas,"Sim, frequentemente",Prefiro por mensagens,Sempre,Igualmente,Difícil,Neutro,"Sim, um pouco",WhatsApp
+29/08/2026 07:28:09,ian,18,3 a 5 horas,Sempre,Computador/Laptop,Às vezes,Provavelmente sim,"Sim, frequentemente","Sim, poucas vezes",Vídeos longos (mais de 20 min),Raramente,Frequentemente,Importante,Instagram,Às vezes,"Não, mas gostaria",Bastante,Às vezes,Desconfio da maioria,Nunca,Definitivamente pessoalmente,Frequentemente,Mais à noite,Fácil,Neutro,"Sim, um pouco",Instagram
+29/08/2026 07:43:21,,,3 a 5 horas,Às vezes (2-4 dias por semana),Smartphone,Raramente,Não tenho certeza,"Sim, às vezes",Talvez (não tenho certeza),Vídeos curtos (até 1 min),Raramente,Frequentemente,Neutro,YouTube,Nunca,"Sim, com sucesso",Bastante,Frequentemente,Desconfio da maioria,Nunca,Prefiro pessoalmente,Às vezes,Mais durante o dia,Fácil,Neutro,"Sim, muita vontade",WhatsApp
+29/08/2026 07:49:13,Gabriel Lucas,15,3 a 5 horas,Às vezes (2-4 dias por semana),Smartphone,Raramente,Não tenho certeza,"Sim, frequentemente","Sim, poucas vezes",Vídeos curtos (até 1 min),Raramente,Frequentemente,Importante,WhatsApp,Nunca,"Sim, com sucesso",Bastante,Frequentemente,Desconfio da maioria,Raras vezes,Prefiro por mensagens,Às vezes,Mais durante o dia,Muito fácil,Neutro,"Sim, um pouco",WhatsApp
+29/08/2026 09:37:40,Danillo,20,6 a 8 horas,Quase sempre (5-6 dias por semana),Todos igualmente,Às vezes,Provavelmente sim,"Sim, às vezes","Sim, poucas vezes",Vídeos médios (5-20 min),Raramente,Frequentemente,Neutro,Instagram,Raramente,"Sim, com sucesso",Neutralmente,Às vezes,Desconfio de algumas,Raras vezes,Sem preferência,Às vezes,Igualmente,Difícil,Mais negativas que positivas,Não sei,WhatsApp
+31/08/2026 12:14:49,Erica,43,6 a 8 horas,Quase sempre (5-6 dias por semana),Smartphone,Frequentemente,Definitivamente sim,"Sim, às vezes","Sim, várias vezes",Vídeos curtos (até 1 min),Na maioria das vezes,Como principal meio de comunicação,Muito importante,WhatsApp,Raramente,"Sim, com sucesso",Muito,Sempre,Desconfio de algumas,"Sim, às vezes",Prefiro por mensagens,Frequentemente,Mais durante o dia,Difícil,Mais positivas que negativas,"Sim, um pouco",WhatsApp`;
+
+const DEFAULT_EXCLUDE = ["Carimbo de data/hora", "Nome"];
+const DEFAULT_SOURCE_NAME = "pesquisa-redes-sociais.csv";
+
+/* =================================================================
+   3. State
+   ================================================================= */
+let STATE = {
+  headers: [],
+  data: [],
+  excluded: [],
+  sourceName: DEFAULT_SOURCE_NAME,
+  col: null,
+  chartType: null,
+  grouping: "raw" // 'raw' | 'grouped'
+};
+
+function loadDataset(csvText, sourceName, excluded) {
+  const { headers, data } = parseCSV(csvText);
+  STATE.headers = headers;
+  STATE.data = data;
+  STATE.excluded = excluded || [];
+  STATE.sourceName = sourceName;
+  populateColumnSelect();
+}
+
+/* =================================================================
+   4. Statistics (validated against hand-computed reference values)
+   ================================================================= */
+function mean(xs) { return xs.reduce((a, b) => a + b, 0) / xs.length; }
+
+function median(xsSorted) {
+  const n = xsSorted.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (xsSorted[mid - 1] + xsSorted[mid]) / 2 : xsSorted[mid];
+}
+
+function modesOf(xsSorted) {
+  const freq = new Map();
+  xsSorted.forEach(v => freq.set(v, (freq.get(v) || 0) + 1));
+  const max = Math.max(...freq.values());
+  if (max === 1) return { values: [], amodal: true, freq: 1 };
+  const vals = [...freq.entries()].filter(([, c]) => c === max).map(([v]) => v);
+  return { values: vals, freq: max, amodal: false };
+}
+
+function quartileUngrouped(xsSorted, k) {
+  const n = xsSorted.length;
+  const pos = (k * n) / 4;
+  if (Number.isInteger(pos)) return (xsSorted[pos - 1] + xsSorted[pos]) / 2;
+  return xsSorted[Math.ceil(pos) - 1];
+}
+
+function roundUpToPrecision(x, precision) {
+  const factor = Math.pow(10, precision);
+  return Math.ceil(x * factor - 1e-9) / factor;
+}
+
+function sturges(n) { return Math.max(4, Math.round(1 + 3.322 * Math.log10(n))); }
+
+function buildClasses(xsSorted, precision) {
+  const n = xsSorted.length;
+  const min = xsSorted[0], max = xsSorted[n - 1];
+  const k = sturges(n);
+  const at = max - min;
+  const prec = precision === undefined ? 0 : precision;
+  const h = at === 0 ? Math.pow(10, -prec) : roundUpToPrecision(at / k, prec);
+  const classes = [];
+  let Li = min, cum = 0;
+  for (let i = 0; i < k; i++) {
+    const isLast = i === k - 1;
+    const Ls = isLast ? Math.max(Li + h, max) : Li + h;
+    const freq = xsSorted.filter(v => isLast ? (v >= Li && v <= Ls) : (v >= Li && v < Ls)).length;
+    cum += freq;
+    classes.push({ Li, Ls, mid: (Li + Ls) / 2, freq, cum });
+    Li = Ls;
+  }
+  return { k, h, classes };
+}
+
+function groupedMean(classes, n) { return classes.reduce((a, c) => a + c.freq * c.mid, 0) / n; }
+
+function groupedMedian(classes, n) {
+  const target = n / 2; let Fant = 0;
+  for (const c of classes) {
+    if (c.cum >= target) return c.Li + ((target - Fant) / c.freq) * (c.Ls - c.Li);
+    Fant = c.cum;
+  }
+  return null;
+}
+
+function groupedMode(classes) {
+  let mi = 0;
+  for (let i = 1; i < classes.length; i++) if (classes[i].freq > classes[mi].freq) mi = i;
+  const c = classes[mi];
+  const prev = classes[mi - 1] ? classes[mi - 1].freq : 0;
+  const next = classes[mi + 1] ? classes[mi + 1].freq : 0;
+  const d1 = c.freq - prev, d2 = c.freq - next, h = c.Ls - c.Li;
+  if (d1 + d2 === 0) return c.mid;
+  return c.Li + (d1 / (d1 + d2)) * h;
+}
+
+function groupedQuartile(classes, n, k) {
+  const target = (k * n) / 4; let Fant = 0;
+  for (const c of classes) {
+    if (c.cum >= target) return c.Li + ((target - Fant) / c.freq) * (c.Ls - c.Li);
+    Fant = c.cum;
+  }
+  return null;
+}
+
+function fmtNum(x, decimals) {
+  if (x === null || x === undefined || Number.isNaN(x)) return "—";
+  const d = decimals === undefined ? 2 : decimals;
+  let r = Math.round(x * Math.pow(10, d)) / Math.pow(10, d);
+  if (Object.is(r, -0)) r = 0; // avoid rendering "-0" on axis ticks near zero
+  return r.toLocaleString("pt-BR", { minimumFractionDigits: r % 1 === 0 ? 0 : d, maximumFractionDigits: d });
+}
+
+/* =================================================================
+   5. Column helpers
+   ================================================================= */
+function activeColumns() {
+  return STATE.headers.filter(h => STATE.excluded.indexOf(h) === -1);
+}
+
+function columnRaw(col) {
+  return STATE.data.map(r => r[col]).filter(v => v !== undefined && v !== "");
+}
+
+function columnNumbers(col) {
+  const raw = columnRaw(col);
+  const parsed = raw.map(v => ({ v, n: parseNumber(v) }));
+  const valid = parsed.filter(p => p.n !== null).map(p => p.n).sort((a, b) => a - b);
+  const decimals = Math.max(0, ...raw.map(decimalsOf));
+  return { raw, valid, decimals, invalidCount: raw.length - valid.length };
+}
+
+function qualFrequency(col) {
+  const raw = columnRaw(col);
+  const freq = new Map();
+  raw.forEach(v => freq.set(v, (freq.get(v) || 0) + 1));
+  const arr = [...freq.entries()].map(([label, value]) => ({ label, value }));
+  arr.sort((a, b) => b.value - a.value);
+  return { data: arr, total: raw.length };
+}
+
+function isQuantColumn(col) {
+  const { valid, raw } = columnNumbers(col);
+  return raw.length > 0 && valid.length >= 3 && valid.length / raw.length >= 0.7;
+}
+
+/* =================================================================
+   6. Color helpers
+   ================================================================= */
+const CAT_SLOTS = ["var(--s-blue)", "var(--s-orange)", "var(--s-aqua)", "var(--s-yellow)", "var(--s-magenta)", "var(--s-green)", "var(--s-violet)", "var(--s-red)"];
+const OTHER_LABELS = ["outro", "outro(a)", "outra", "outros"];
+
+function categoricalColorMap(items) {
+  const map = {}; let slot = 0;
+  items.forEach(d => {
+    const key = d.label.trim().toLowerCase();
+    if (OTHER_LABELS.indexOf(key) !== -1) { map[d.label] = "var(--pol-neutral)"; return; }
+    map[d.label] = CAT_SLOTS[slot % CAT_SLOTS.length];
+    slot++;
+  });
+  return map;
+}
+
+function sequentialColor(i, n) {
+  if (n <= 1) return "var(--s-blue)";
+  const pct = Math.round(28 + (i / (n - 1)) * 72);
+  return `color-mix(in oklab, var(--s-blue) ${pct}%, var(--surface))`;
+}
+
+/* =================================================================
+   7. SVG helpers
+   ================================================================= */
+const SVGNS = "http://www.w3.org/2000/svg";
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function niceScale(maxVal, maxTicks) {
+  maxTicks = maxTicks || 5;
+  if (maxVal <= 0) return { max: 1, step: 1 };
+  const rawStep = maxVal / maxTicks;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const norm = rawStep / mag;
+  let step;
+  if (norm <= 1) step = mag; else if (norm <= 2) step = 2 * mag; else if (norm <= 5) step = 5 * mag; else step = 10 * mag;
+  return { max: Math.ceil(maxVal / step) * step, step };
+}
+function polar(cx, cy, r, angleDeg) {
+  const a = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+function pieSlicePath(cx, cy, r, a0, a1) {
+  const p0 = polar(cx, cy, r, a0), p1 = polar(cx, cy, r, a1);
+  const large = a1 - a0 > 180 ? 1 : 0;
+  return `M ${cx},${cy} L ${p0.x},${p0.y} A ${r},${r} 0 ${large} 1 ${p1.x},${p1.y} Z`;
+}
+
+const tipEl = document.getElementById("tooltip");
+function showTip(e, html) { tipEl.innerHTML = html; tipEl.classList.add("show"); moveTip(e); }
+function moveTip(e) { tipEl.style.left = e.clientX + "px"; tipEl.style.top = (e.clientY - 12) + "px"; }
+function hideTip() { tipEl.classList.remove("show"); }
+function attachTip(el, html) {
+  el.addEventListener("mouseenter", e => showTip(e, html));
+  el.addEventListener("mousemove", moveTip);
+  el.addEventListener("mouseleave", hideTip);
+}
+
+/* =================================================================
+   8. Chart renderers — each takes (host, ...) and fills host with an <svg>/legend
+   ================================================================= */
+function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+function renderBarHoriz(host, data, colorMap) {
+  clear(host);
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const max = Math.max(...data.map(d => d.value), 1);
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "display:flex;flex-direction:column;gap:13px;width:100%;padding:6px 4px;";
+  data.forEach(d => {
+    const p = Math.round((d.value / total) * 100);
+    const color = (colorMap && colorMap[d.label]) || "var(--accent)";
+    const row = document.createElement("div");
+    row.style.cssText = "display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:10px;";
+    row.innerHTML =
+      `<span style="font-size:12.5px;color:var(--ink-2);text-align:right;line-height:1.25;">${d.label}</span>` +
+      `<span style="position:relative;height:18px;border-left:1px solid var(--baseline);">` +
+      `<span class="bhbar" style="position:absolute;left:0;top:0;height:100%;width:${(d.value / max * 100)}%;min-width:3px;border-radius:0 4px 4px 0;background:${color};cursor:pointer;"></span></span>` +
+      `<span style="font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-2);white-space:nowrap;">${d.value} · ${p}%</span>`;
+    attachTip(row.querySelector(".bhbar"), `<b>${d.label}</b><br>${d.value} de ${total} · ${p}%`);
+    wrap.appendChild(row);
+  });
+  host.appendChild(wrap);
+}
+
+function renderColumnsVert(host, data, colorMap) {
+  clear(host);
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const long = data.length > 5 || data.some(d => d.label.length > 10);
+  const W = 640, H = 380, top = 24, right = 20, bottom = long ? 92 : 54, left = 46;
+  const pw = W - left - right, ph = H - top - bottom;
+  const scale = niceScale(Math.max(...data.map(d => d.value), 1));
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  const band = pw / data.length;
+  const barW = Math.min(46, band * 0.58);
+  const y0 = top + ph;
+
+  for (let t = 0; t <= scale.max; t += scale.step) {
+    const y = y0 - (t / scale.max) * ph;
+    svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+    const lbl = svgEl("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = t;
+    svg.appendChild(lbl);
+  }
+  svg.appendChild(svgEl("line", { x1: left, x2: left, y1: top, y2: y0, stroke: "var(--baseline)", "stroke-width": 1 }));
+  svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: y0, y2: y0, stroke: "var(--baseline)", "stroke-width": 1 }));
+
+  data.forEach((d, i) => {
+    const x = left + i * band + (band - barW) / 2;
+    const h = (d.value / scale.max) * ph;
+    const y = y0 - h;
+    const color = (colorMap && colorMap[d.label]) || "var(--accent)";
+    const rect = svgEl("rect", { x, y, width: barW, height: h, rx: 4, ry: 4, fill: color, style: "cursor:pointer" });
+    const p = Math.round((d.value / total) * 100);
+    attachTip(rect, `<b>${d.label}</b><br>${d.value} de ${total} · ${p}%`);
+    svg.appendChild(rect);
+    const val = svgEl("text", { x: x + barW / 2, y: y - 6, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-2)", "font-family": "var(--font-mono)" });
+    val.textContent = d.value;
+    svg.appendChild(val);
+    const lx = x + barW / 2, ly = y0 + 16;
+    const lbl = svgEl("text", { x: lx, y: ly, "font-size": 10.5, fill: "var(--ink-2)" });
+    if (long) { lbl.setAttribute("transform", `rotate(-32 ${lx} ${ly})`); lbl.setAttribute("text-anchor", "end"); }
+    else lbl.setAttribute("text-anchor", "middle");
+    lbl.textContent = d.label.length > 16 ? d.label.slice(0, 15) + "…" : d.label;
+    svg.appendChild(lbl);
+  });
+  host.appendChild(svg);
+}
+
+function renderPie(host, data, colorMode, colorMap) {
+  clear(host);
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const r = 90, cx = 100, cy = 100;
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "display:flex;gap:26px;align-items:center;flex-wrap:wrap;justify-content:center;width:100%;";
+  const svg = svgEl("svg", { viewBox: "0 0 200 200", width: 220, height: 220 });
+  let angle = 0;
+  const legend = document.createElement("div");
+  legend.className = "legend";
+  data.forEach((d, i) => {
+    const frac = d.value / total;
+    const a0 = angle, a1 = angle + frac * 360;
+    angle = a1;
+    const color = colorMode === "sequential" ? sequentialColor(i, data.length) : ((colorMap && colorMap[d.label]) || CAT_SLOTS[i % CAT_SLOTS.length]);
+    const path = svgEl("path", { d: pieSlicePath(cx, cy, r, a0, a1), fill: color, stroke: "var(--surface)", "stroke-width": 2, style: "cursor:pointer" });
+    const p = Math.round(frac * 100);
+    attachTip(path, `<b>${d.label}</b><br>${d.value} de ${total} · ${p}%`);
+    svg.appendChild(path);
+    const row = document.createElement("div");
+    row.className = "legend-row";
+    row.innerHTML = `<span class="swatch" style="background:${color}"></span><span class="legend-name">${d.label}</span><span class="legend-val">${d.value} · ${p}%</span>`;
+    legend.appendChild(row);
+  });
+  wrap.appendChild(svg);
+  wrap.appendChild(legend);
+  host.appendChild(wrap);
+}
+
+function renderLine(host, data, colorMode, colorMap) {
+  clear(host);
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const long = data.length > 5 || data.some(d => d.label.length > 10);
+  const W = 640, H = 380, top = 24, right = 24, bottom = long ? 92 : 54, left = 46;
+  const pw = W - left - right, ph = H - top - bottom;
+  const scale = niceScale(Math.max(...data.map(d => d.value), 1));
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  const band = data.length > 1 ? pw / (data.length - 1) : 0;
+  const y0 = top + ph;
+
+  for (let t = 0; t <= scale.max; t += scale.step) {
+    const y = y0 - (t / scale.max) * ph;
+    svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+    const lbl = svgEl("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = t; svg.appendChild(lbl);
+  }
+  svg.appendChild(svgEl("line", { x1: left, x2: left, y1: top, y2: y0, stroke: "var(--baseline)", "stroke-width": 1 }));
+  svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: y0, y2: y0, stroke: "var(--baseline)", "stroke-width": 1 }));
+
+  const pts = data.map((d, i) => ({ x: left + (data.length > 1 ? i * band : pw / 2), y: y0 - (d.value / scale.max) * ph, d }));
+  const path = svgEl("path", { d: "M " + pts.map(p => `${p.x},${p.y}`).join(" L "), fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" });
+  svg.appendChild(path);
+  pts.forEach(p => {
+    const dot = svgEl("circle", { cx: p.x, cy: p.y, r: 5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2, style: "cursor:pointer" });
+    const pct = Math.round((p.d.value / total) * 100);
+    attachTip(dot, `<b>${p.d.label}</b><br>${p.d.value} de ${total} · ${pct}%`);
+    svg.appendChild(dot);
+    const lx = p.x, ly = y0 + 16;
+    const lbl = svgEl("text", { x: lx, y: ly, "font-size": 10.5, fill: "var(--ink-2)" });
+    if (long) { lbl.setAttribute("transform", `rotate(-32 ${lx} ${ly})`); lbl.setAttribute("text-anchor", "end"); }
+    else lbl.setAttribute("text-anchor", "middle");
+    lbl.textContent = p.d.label.length > 16 ? p.d.label.slice(0, 15) + "…" : p.d.label;
+    svg.appendChild(lbl);
+  });
+  host.appendChild(svg);
+}
+
+function renderDotPlot(host, xs, decimals) {
+  clear(host);
+  const min = xs[0], max = xs[xs.length - 1];
+  const W = 640, H = 280, top = 24, right = 30, bottom = 44, left = 30;
+  const pw = W - left - right;
+  const pad = (max - min) * 0.08 || 1;
+  const domainMin = min - pad, domainMax = max + pad;
+  const scale = niceScale(domainMax - domainMin, 6);
+  const x0 = domainMin, xrange = domainMax - domainMin;
+  const xPos = v => left + ((v - x0) / xrange) * pw;
+
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  const baseY = H - bottom;
+  svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: baseY, y2: baseY, stroke: "var(--baseline)", "stroke-width": 1 }));
+
+  const counts = new Map();
+  xs.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+  const distinct = [...counts.keys()].sort((a, b) => a - b);
+  const step = niceScale(xrange, 6).step;
+  const startTick = Math.ceil(domainMin / step) * step;
+  for (let t = startTick; t <= domainMax; t += step) {
+    const x = xPos(t);
+    svg.appendChild(svgEl("line", { x1: x, x2: x, y1: baseY, y2: baseY + 5, stroke: "var(--baseline)", "stroke-width": 1 }));
+    const lbl = svgEl("text", { x, y: baseY + 18, "text-anchor": "middle", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = fmtNum(t, decimals);
+    svg.appendChild(lbl);
+  }
+
+  distinct.forEach(v => {
+    const c = counts.get(v);
+    const x = xPos(v);
+    for (let i = 0; i < c; i++) {
+      const cy = baseY - 8 - i * 13;
+      const dot = svgEl("circle", { cx: x, cy, r: 5.5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 1.5, style: "cursor:pointer" });
+      attachTip(dot, `<b>${fmtNum(v, decimals)}</b><br>${c} ${c === 1 ? "resposta" : "respostas"}`);
+      svg.appendChild(dot);
+    }
+  });
+  host.appendChild(svg);
+}
+
+function renderOgive(host, classes, n) {
+  clear(host);
+  const boundaries = [{ x: classes[0].Li, y: 0 }].concat(classes.map(c => ({ x: c.Ls, y: c.cum })));
+  const W = 640, H = 380, top = 24, right = 24, bottom = 60, left = 46;
+  const pw = W - left - right, ph = H - top - bottom;
+  const scaleY = niceScale(n);
+  const xmin = boundaries[0].x, xmax = boundaries[boundaries.length - 1].x;
+  const xPos = v => left + ((v - xmin) / (xmax - xmin)) * pw;
+  const yPos = v => top + ph - (v / scaleY.max) * ph;
+
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  for (let t = 0; t <= scaleY.max; t += scaleY.step) {
+    const y = yPos(t);
+    svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+    const lbl = svgEl("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = t; svg.appendChild(lbl);
+  }
+  svg.appendChild(svgEl("line", { x1: left, x2: left, y1: top, y2: top + ph, stroke: "var(--baseline)", "stroke-width": 1 }));
+  svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: top + ph, y2: top + ph, stroke: "var(--baseline)", "stroke-width": 1 }));
+
+  const path = svgEl("path", { d: "M " + boundaries.map(b => `${xPos(b.x)},${yPos(b.y)}`).join(" L "), fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round" });
+  svg.appendChild(path);
+  boundaries.forEach((b, i) => {
+    const x = xPos(b.x), y = yPos(b.y);
+    const dot = svgEl("circle", { cx: x, cy: y, r: 5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2, style: "cursor:pointer" });
+    const pct = Math.round((b.y / n) * 100);
+    attachTip(dot, `<b>Até ${fmtNum(b.x, 1)}</b><br>${b.y} de ${n} acumulado · ${pct}%`);
+    svg.appendChild(dot);
+    const lbl = svgEl("text", { x, y: top + ph + 20, "text-anchor": "middle", "font-size": 10, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = fmtNum(b.x, 1);
+    svg.appendChild(lbl);
+  });
+  host.appendChild(svg);
+}
+
+function renderBoxplot(host, xs) {
+  clear(host);
+  const n = xs.length;
+  const q1 = quartileUngrouped(xs, 1), q2 = quartileUngrouped(xs, 2), q3 = quartileUngrouped(xs, 3);
+  const iqr = q3 - q1;
+  const lowFence = q1 - 1.5 * iqr, highFence = q3 + 1.5 * iqr;
+  const inFence = xs.filter(v => v >= lowFence && v <= highFence);
+  const whiskerLo = inFence.length ? Math.min(...inFence) : xs[0];
+  const whiskerHi = inFence.length ? Math.max(...inFence) : xs[xs.length - 1];
+  const outliers = xs.filter(v => v < lowFence || v > highFence);
+
+  // Domain is set from the whisker range (not the raw min/max), so one extreme
+  // outlier can't collapse the box+whiskers to an invisible sliver. Outliers
+  // that fall outside this window are still drawn, clamped to the plot edge,
+  // with their real value in the tooltip and in the stats card.
+  const pad = (whiskerHi - whiskerLo) * 0.35 || Math.abs(whiskerHi) * 0.1 || 1;
+  const domainMin = whiskerLo - pad, domainMax = whiskerHi + pad;
+  const scale = niceScale(domainMax - domainMin, 6);
+
+  const W = 300, H = 380, top = 20, bottom = 34, left = 46, right = 40;
+  const ph = H - top - bottom;
+  const yPos = v => top + ph - ((v - domainMin) / (domainMax - domainMin)) * ph;
+  const clampY = y => Math.min(Math.max(y, top + 6), top + ph - 6);
+  const cx = left + (W - left - right) / 2, boxW = 76;
+
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  const startTick = Math.ceil(domainMin / scale.step) * scale.step;
+  for (let t = startTick; t <= domainMax; t += scale.step) {
+    const y = yPos(t);
+    svg.appendChild(svgEl("line", { x1: left, x2: W - right, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+    const lbl = svgEl("text", { x: left - 8, y: y + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "var(--font-mono)" });
+    lbl.textContent = fmtNum(t, 0); svg.appendChild(lbl);
+  }
+
+  svg.appendChild(svgEl("line", { x1: cx, x2: cx, y1: yPos(whiskerLo), y2: yPos(q1), stroke: "var(--ink-3)", "stroke-width": 2 }));
+  svg.appendChild(svgEl("line", { x1: cx, x2: cx, y1: yPos(q3), y2: yPos(whiskerHi), stroke: "var(--ink-3)", "stroke-width": 2 }));
+  svg.appendChild(svgEl("line", { x1: cx - 18, x2: cx + 18, y1: yPos(whiskerLo), y2: yPos(whiskerLo), stroke: "var(--ink-3)", "stroke-width": 2 }));
+  svg.appendChild(svgEl("line", { x1: cx - 18, x2: cx + 18, y1: yPos(whiskerHi), y2: yPos(whiskerHi), stroke: "var(--ink-3)", "stroke-width": 2 }));
+
+  const boxTop = yPos(q3), boxBot = yPos(q1);
+  const box = svgEl("rect", { x: cx - boxW / 2, y: boxTop, width: boxW, height: boxBot - boxTop, fill: "var(--accent)", opacity: 0.85, rx: 3 });
+  attachTip(box, `<b>Q1–Q3</b><br>Q1 = ${fmtNum(q1)} · Q3 = ${fmtNum(q3)}<br>IQR = ${fmtNum(iqr)}`);
+  box.style.cursor = "pointer";
+  svg.appendChild(box);
+  svg.appendChild(svgEl("line", { x1: cx - boxW / 2, x2: cx + boxW / 2, y1: yPos(q2), y2: yPos(q2), stroke: "#fff", "stroke-width": 3 }));
+
+  // Outliers that clamp to the same edge would overlap into a single dot —
+  // spread them horizontally in small clusters so each stays visible/hoverable.
+  const clampGroups = { top: [], bottom: [], normal: [] };
+  outliers.forEach(v => {
+    const trueY = yPos(v);
+    const y = clampY(trueY);
+    if (Math.abs(trueY - y) <= 1) clampGroups.normal.push(v);
+    else clampGroups[trueY < y ? "top" : "bottom"].push(v);
+  });
+  function drawOutlierCluster(vals, y, offscreen) {
+    const n = vals.length, spacing = 13;
+    vals.forEach((v, i) => {
+      const dx = (i - (n - 1) / 2) * spacing;
+      const dot = svgEl("circle", { cx: cx + dx, cy: y, r: 5, fill: "var(--critical)", stroke: "var(--surface)", "stroke-width": 1.5, style: "cursor:pointer" });
+      attachTip(dot, `<b>${fmtNum(v)}</b><br>valor atípico (fora de 1,5×IQR)` + (offscreen ? "<br>(fora da escala do gráfico)" : ""));
+      svg.appendChild(dot);
+    });
+  }
+  if (clampGroups.normal.length) {
+    // draw non-clamped outliers at their true position, spreading any that collide
+    const byY = new Map();
+    clampGroups.normal.forEach(v => {
+      const y = Math.round(yPos(v));
+      if (!byY.has(y)) byY.set(y, []);
+      byY.get(y).push(v);
+    });
+    byY.forEach((vals, y) => drawOutlierCluster(vals, y, false));
+  }
+  if (clampGroups.top.length) drawOutlierCluster(clampGroups.top, top + 6, true);
+  if (clampGroups.bottom.length) drawOutlierCluster(clampGroups.bottom, top + ph - 6, true);
+
+  host.appendChild(svg);
+}
+
+/* =================================================================
+   9. Stats / frequency table renderers
+   ================================================================= */
+function measureTile(label, value) {
+  const d = document.createElement("div");
+  d.className = "measure";
+  d.innerHTML = `<span class="m-label">${label}</span><span class="m-value">${value}</span>`;
+  return d;
+}
+
+function renderQualStats(host, freqResult) {
+  clear(host);
+  const { data, total } = freqResult;
+  const measures = document.createElement("div");
+  measures.className = "measures";
+  const m = modesOf(data.map(d => d.value)); // placeholder not used
+  const topVal = data[0];
+  measures.appendChild(measureTile("Moda", topVal ? topVal.label : "—"));
+  measures.appendChild(measureTile("Nº de categorias", data.length));
+  measures.appendChild(measureTile("Respostas (n)", total));
+  host.appendChild(measures);
+
+  const note = document.createElement("p");
+  note.className = "formula-note";
+  note.style.marginTop = "0";
+  note.style.paddingTop = "0";
+  note.style.borderTop = "none";
+  note.style.marginBottom = "14px";
+  note.textContent = "Variável qualitativa — média, mediana e quartis não se aplicam a categorias sem ordem numérica; a moda é a categoria mais frequente.";
+  host.appendChild(note);
+
+  const scroll = document.createElement("div");
+  scroll.className = "table-scroll";
+  const table = document.createElement("table");
+  table.className = "freqtable";
+  table.innerHTML = "<thead><tr><th>Categoria</th><th>Freq. (n)</th><th>Freq. relativa</th></tr></thead>";
+  const tbody = document.createElement("tbody");
+  data.forEach(d => {
+    const p = Math.round((d.value / total) * 100);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${d.label}</td><td>${d.value}</td><td>${p}%</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  scroll.appendChild(table);
+  host.appendChild(scroll);
+}
+
+function renderQuantStatsRaw(host, xs, decimals) {
+  clear(host);
+  const n = xs.length;
+  const mo = modesOf(xs);
+  const measures = document.createElement("div");
+  measures.className = "measures";
+  measures.appendChild(measureTile("Média", fmtNum(mean(xs), decimals + 2)));
+  measures.appendChild(measureTile("Mediana", fmtNum(median(xs), decimals + 1)));
+  measures.appendChild(measureTile("Moda", mo.amodal ? "amodal" : mo.values.map(v => fmtNum(v, decimals)).join(", ")));
+  measures.appendChild(measureTile("Q1", fmtNum(quartileUngrouped(xs, 1), decimals + 1)));
+  measures.appendChild(measureTile("Q2 (mediana)", fmtNum(quartileUngrouped(xs, 2), decimals + 1)));
+  measures.appendChild(measureTile("Q3", fmtNum(quartileUngrouped(xs, 3), decimals + 1)));
+  host.appendChild(measures);
+
+  const counts = new Map();
+  xs.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+  const distinct = [...counts.keys()].sort((a, b) => a - b);
+  const scroll = document.createElement("div");
+  scroll.className = "table-scroll";
+  const table = document.createElement("table");
+  table.className = "freqtable";
+  table.innerHTML = "<thead><tr><th>Valor</th><th>Freq. (n)</th><th>Freq. acum.</th><th>Freq. relativa</th></tr></thead>";
+  const tbody = document.createElement("tbody");
+  let cum = 0;
+  distinct.forEach(v => {
+    const f = counts.get(v); cum += f;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${fmtNum(v, decimals)}</td><td>${f}</td><td>${cum}</td><td>${Math.round(f / n * 100)}%</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  scroll.appendChild(table);
+  host.appendChild(scroll);
+
+  const note = document.createElement("p");
+  note.className = "formula-note";
+  note.textContent = "Sem intervalo de classe: mediana e quartis pelo método da posição k·n/4 (Crespo) sobre os dados ordenados.";
+  host.appendChild(note);
+}
+
+function renderQuantStatsGrouped(host, xs, decimals) {
+  clear(host);
+  const n = xs.length;
+  const { k, h, classes } = buildClasses(xs, decimals);
+  const gMean = groupedMean(classes, n);
+  const gMedian = groupedMedian(classes, n);
+  const gMode = groupedMode(classes);
+  const gQ1 = groupedQuartile(classes, n, 1);
+  const gQ3 = groupedQuartile(classes, n, 3);
+
+  const measures = document.createElement("div");
+  measures.className = "measures";
+  measures.appendChild(measureTile("Média", fmtNum(gMean, decimals + 2)));
+  measures.appendChild(measureTile("Mediana", fmtNum(gMedian, decimals + 2)));
+  measures.appendChild(measureTile("Moda (Czuber)", fmtNum(gMode, decimals + 2)));
+  measures.appendChild(measureTile("Q1", fmtNum(gQ1, decimals + 2)));
+  measures.appendChild(measureTile("Nº de classes (k)", k));
+  measures.appendChild(measureTile("Amplitude (h)", fmtNum(h, decimals)));
+  host.appendChild(measures);
+
+  const scroll = document.createElement("div");
+  scroll.className = "table-scroll";
+  const table = document.createElement("table");
+  table.className = "freqtable";
+  table.innerHTML = "<thead><tr><th>Classe</th><th>Ponto médio</th><th>Freq. (n)</th><th>Freq. acum.</th><th>Freq. relativa</th></tr></thead>";
+  const tbody = document.createElement("tbody");
+  classes.forEach(c => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${fmtNum(c.Li, decimals)} ⊢ ${fmtNum(c.Ls, decimals)}</td><td>${fmtNum(c.mid, decimals + 1)}</td><td>${c.freq}</td><td>${c.cum}</td><td>${Math.round(c.freq / n * 100)}%</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  scroll.appendChild(table);
+  host.appendChild(scroll);
+
+  const note = document.createElement("p");
+  note.className = "formula-note";
+  note.textContent = `Com intervalo de classe: k = 1 + 3,322·log₁₀(${n}) ≈ ${k} classes de amplitude h = ${fmtNum(h, decimals)}. Média = Σ(fi·xi)/n; mediana e quartis por interpolação linear; moda pela fórmula de Czuber.`;
+  host.appendChild(note);
+}
+
+function renderBoxplotStats(host, xs, decimals) {
+  clear(host);
+  const q1 = quartileUngrouped(xs, 1), q2 = quartileUngrouped(xs, 2), q3 = quartileUngrouped(xs, 3);
+  const iqr = q3 - q1, low = q1 - 1.5 * iqr, high = q3 + 1.5 * iqr;
+  const outliers = xs.filter(v => v < low || v > high);
+  const inFence = xs.filter(v => v >= low && v <= high);
+
+  const measures = document.createElement("div");
+  measures.className = "measures";
+  measures.appendChild(measureTile("Mínimo", fmtNum(xs[0], decimals)));
+  measures.appendChild(measureTile("Q1", fmtNum(q1, decimals + 1)));
+  measures.appendChild(measureTile("Mediana (Q2)", fmtNum(q2, decimals + 1)));
+  measures.appendChild(measureTile("Q3", fmtNum(q3, decimals + 1)));
+  measures.appendChild(measureTile("Máximo", fmtNum(xs[xs.length - 1], decimals)));
+  measures.appendChild(measureTile("Amplitude interquartil", fmtNum(iqr, decimals + 1)));
+  host.appendChild(measures);
+
+  const p = document.createElement("p");
+  p.style.cssText = "font-size:13px;line-height:1.6;color:var(--ink-2);margin:0 0 14px;";
+  p.innerHTML = `Limites de corte (1,5×IQR): <b>${fmtNum(low, decimals + 1)}</b> a <b>${fmtNum(high, decimals + 1)}</b>. ` +
+    (outliers.length
+      ? `<b>${outliers.length} valor(es) atípico(s):</b> ${outliers.map(v => fmtNum(v, decimals)).join(", ")}.`
+      : "Nenhum valor atípico nessa variável.");
+  host.appendChild(p);
+
+  const note = document.createElement("p");
+  note.className = "formula-note";
+  note.textContent = "O boxplot usa sempre os quartis dos dados brutos (não agrupados em classes), como de costume.";
+  host.appendChild(note);
+}
+
+/* =================================================================
+   10. Controller
+   ================================================================= */
+// All 7 chart types always exist in the dropdown; the quantOnly ones are
+// merely disabled (not hidden) when the current column is qualitative, so
+// the full list is visible even before the user picks a numeric variable.
+const CHART_OPTIONS = [
+  { v: "bar-h", label: "Gráfico de Barras (horizontal)", quantOnly: false },
+  { v: "col-v", label: "Gráfico de Colunas (vertical)", quantOnly: false },
+  { v: "pie", label: "Gráfico de Pizza", quantOnly: false },
+  { v: "line", label: "Gráfico de Linha", quantOnly: false },
+  { v: "dots", label: "Gráfico de Pontos", quantOnly: true },
+  { v: "ogive", label: "Gráfico de Ogiva", quantOnly: true },
+  { v: "box", label: "Boxplot", quantOnly: true }
+];
+
+const colSelect = document.getElementById("colSelect");
+const chartSelect = document.getElementById("chartSelect");
+const typeBadge = document.getElementById("typeBadge");
+const validNEl = document.getElementById("validN");
+const groupingRow = document.getElementById("groupingRow");
+const groupingNote = document.getElementById("groupingNote");
+const groupingBtns = groupingRow.querySelectorAll("button");
+const chartHost = document.getElementById("chartHost");
+const chartTitle = document.getElementById("chartTitle");
+const chartN = document.getElementById("chartN");
+const statsHost = document.getElementById("statsHost");
+const statsTitle = document.getElementById("statsTitle");
+const statsN = document.getElementById("statsN");
+const sourceLine = document.getElementById("sourceLine");
+const importError = document.getElementById("importError");
+
+function populateColumnSelect() {
+  clear(colSelect);
+  activeColumns().forEach(h => {
+    const opt = document.createElement("option");
+    opt.value = h; opt.textContent = h;
+    colSelect.appendChild(opt);
+  });
+  const cols = activeColumns();
+  STATE.col = cols.indexOf(STATE.col) !== -1 ? STATE.col : (cols.length > 2 ? cols[2] : cols[0]);
+  colSelect.value = STATE.col;
+  sourceLine.textContent = `Usando: ${STATE.sourceName} · ${STATE.data.length} linhas` + (STATE.sourceName === DEFAULT_SOURCE_NAME ? "" : "  ·  ");
+  if (STATE.sourceName !== DEFAULT_SOURCE_NAME) {
+    const btn = document.createElement("button");
+    btn.textContent = "usar dados de exemplo";
+    btn.addEventListener("click", () => {
+      loadDataset(DEFAULT_CSV, DEFAULT_SOURCE_NAME, DEFAULT_EXCLUDE);
+      onColumnChange();
+    });
+    sourceLine.appendChild(btn);
+  }
+  onColumnChange();
+}
+
+function populateChartSelect(isQuant, preferred) {
+  clear(chartSelect);
+  CHART_OPTIONS.forEach(o => {
+    const opt = document.createElement("option");
+    opt.value = o.v;
+    const disabled = o.quantOnly && !isQuant;
+    opt.disabled = disabled;
+    opt.textContent = o.label + (disabled ? " (só para variável quantitativa)" : "");
+    chartSelect.appendChild(opt);
+  });
+  const allowed = CHART_OPTIONS.filter(o => isQuant || !o.quantOnly).map(o => o.v);
+  STATE.chartType = allowed.indexOf(preferred) !== -1 ? preferred : allowed[0];
+  chartSelect.value = STATE.chartType;
+}
+
+function onColumnChange() {
+  STATE.col = colSelect.value;
+  const isQuant = isQuantColumn(STATE.col);
+  typeBadge.textContent = isQuant ? "Quantitativa" : "Qualitativa";
+  typeBadge.className = "badge " + (isQuant ? "quant" : "qual");
+  const nums = columnNumbers(STATE.col);
+  validNEl.textContent = isQuant ? `n = ${nums.valid.length} de ${nums.raw.length} respostas válidas` : `n = ${columnRaw(STATE.col).length} respostas`;
+  populateChartSelect(isQuant, STATE.chartType);
+  updateGroupingUI();
+  renderAll();
+}
+
+function updateGroupingUI() {
+  const isQuant = isQuantColumn(STATE.col);
+  const forcesGrouped = STATE.chartType === "ogive";
+  const forcesRaw = STATE.chartType === "dots" || STATE.chartType === "box";
+  const showToggle = isQuant && !forcesGrouped && !forcesRaw;
+  groupingRow.style.display = isQuant ? "flex" : "none";
+
+  if (forcesGrouped) STATE.grouping = "grouped";
+  if (forcesRaw) STATE.grouping = "raw";
+
+  groupingBtns.forEach(b => {
+    b.disabled = !showToggle;
+    b.setAttribute("aria-pressed", b.dataset.mode === STATE.grouping ? "true" : "false");
+  });
+
+  if (!isQuant) groupingNote.textContent = "";
+  else if (forcesGrouped) groupingNote.textContent = "A ogiva sempre usa a distribuição com intervalo de classe (frequência acumulada).";
+  else if (forcesRaw) groupingNote.textContent = STATE.chartType === "box" ? "O boxplot sempre usa os quartis dos dados brutos." : "O gráfico de pontos sempre usa os dados brutos, um ponto por resposta.";
+  else groupingNote.textContent = "";
+}
+
+function renderAll() {
+  const isQuant = isQuantColumn(STATE.col);
+  chartTitle.textContent = STATE.col;
+  statsTitle.textContent = "Tabela e medidas";
+  statsN.textContent = "";
+
+  if (!isQuant) {
+    const freq = qualFrequency(STATE.col);
+    chartN.textContent = `n = ${freq.total}`;
+    const colorMap = categoricalColorMap(freq.data);
+    if (STATE.chartType === "bar-h") renderBarHoriz(chartHost, freq.data, colorMap);
+    else if (STATE.chartType === "col-v") renderColumnsVert(chartHost, freq.data, colorMap);
+    else if (STATE.chartType === "pie") renderPie(chartHost, freq.data, "identity", colorMap);
+    else if (STATE.chartType === "line") renderLine(chartHost, freq.data, "identity", colorMap);
+    renderQualStats(statsHost, freq);
+    return;
+  }
+
+  const { valid, decimals, invalidCount, raw } = columnNumbers(STATE.col);
+  chartN.textContent = `n = ${valid.length}` + (invalidCount ? ` (${invalidCount} valor(es) não numérico(s) ignorado(s))` : "");
+
+  if (STATE.chartType === "dots") { renderDotPlot(chartHost, valid, decimals); renderQuantStatsRaw(statsHost, valid, decimals); return; }
+  if (STATE.chartType === "box") { renderBoxplot(chartHost, valid); renderBoxplotStats(statsHost, valid, decimals); return; }
+  if (STATE.chartType === "ogive") {
+    const { classes } = buildClasses(valid, decimals);
+    renderOgive(chartHost, classes, valid.length);
+    renderQuantStatsGrouped(statsHost, valid, decimals);
+    return;
+  }
+
+  // bar-h / col-v / pie / line — respect the sem/com intervalo toggle
+  let displayData;
+  if (STATE.grouping === "grouped") {
+    const { classes } = buildClasses(valid, decimals);
+    displayData = classes.map(c => ({ label: `${fmtNum(c.Li, decimals)}⊢${fmtNum(c.Ls, decimals)}`, value: c.freq }));
+    renderQuantStatsGrouped(statsHost, valid, decimals);
+  } else {
+    const counts = new Map();
+    valid.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+    displayData = [...counts.keys()].sort((a, b) => a - b).map(v => ({ label: fmtNum(v, decimals), value: counts.get(v) }));
+    renderQuantStatsRaw(statsHost, valid, decimals);
+  }
+  if (STATE.chartType === "bar-h") renderBarHoriz(chartHost, displayData, null);
+  else if (STATE.chartType === "col-v") renderColumnsVert(chartHost, displayData, null);
+  else if (STATE.chartType === "pie") renderPie(chartHost, displayData, "sequential", null);
+  else if (STATE.chartType === "line") renderLine(chartHost, displayData, "sequential", null);
+}
+
+/* =================================================================
+   11. Events
+   ================================================================= */
+colSelect.addEventListener("change", onColumnChange);
+chartSelect.addEventListener("change", () => { STATE.chartType = chartSelect.value; updateGroupingUI(); renderAll(); });
+groupingBtns.forEach(b => b.addEventListener("click", () => {
+  if (b.disabled) return;
+  STATE.grouping = b.dataset.mode;
+  updateGroupingUI();
+  renderAll();
+}));
+
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  importError.hidden = true;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      loadDataset(String(reader.result), file.name, []);
+    } catch (err) {
+      importError.hidden = false;
+      importError.textContent = "Não consegui ler esse CSV: " + err.message;
+    }
+  };
+  reader.onerror = () => { importError.hidden = false; importError.textContent = "Não consegui abrir esse arquivo."; };
+  reader.readAsText(file, "UTF-8");
+  e.target.value = "";
+});
+
+/* ---- export: chart (SVG -> PNG) or DOM node (html2canvas) -> PNG download ---- */
+function download(dataUrl, filename) {
+  const a = document.createElement("a");
+  a.href = dataUrl; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function exportNodeAsPng(node, filename) {
+  if (typeof html2canvas === "undefined") {
+    alert("Não consegui carregar a biblioteca de exportação (sem conexão com a internet). Tente novamente com internet disponível, ou use uma captura de tela.");
+    return;
+  }
+  const btn = node.querySelector(".export-btn");
+  const prevDisplay = btn ? btn.style.display : null;
+  if (btn) btn.style.display = "none";
+  const bg = getComputedStyle(document.getElementById("chartCard")).backgroundColor;
+  html2canvas(node, { backgroundColor: bg, scale: 2 }).then(canvas => {
+    download(canvas.toDataURL("image/png"), filename);
+  }).catch(() => {
+    alert("Não consegui gerar a imagem. Tente novamente ou use uma captura de tela.");
+  }).finally(() => { if (btn) btn.style.display = prevDisplay; });
+}
+
+document.getElementById("exportChart").addEventListener("click", () => {
+  const card = document.getElementById("chartCard");
+  exportNodeAsPng(card, "grafico.png");
+});
+document.getElementById("exportStats").addEventListener("click", () => {
+  const card = document.getElementById("statsCard");
+  exportNodeAsPng(card, "tabela.png");
+});
+
+/* =================================================================
+   12. Init
+   ================================================================= */
+// Opens on the one numeric column in the sample data (Idade) so every chart
+// type — including the quantitative-only ones — and the full stats panel
+// (média/mediana/moda/quartis, com e sem intervalo de classe) are visible
+// on first load, instead of only the 4 qualitative options.
+loadDataset(DEFAULT_CSV, DEFAULT_SOURCE_NAME, DEFAULT_EXCLUDE);
+STATE.col = "Idade";
+STATE.chartType = "box";
+colSelect.value = STATE.col;
+onColumnChange();
+
+})();
+</script>
