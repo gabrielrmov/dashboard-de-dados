@@ -4,22 +4,30 @@ Ferramenta interativa de análise estatística: escolha uma pergunta, o tipo de 
 
 Site estático de uma página só (`index.html`).
 
-## Publicado no Cloudflare Pages
+## Publicado no GitHub Pages
 
-O site está publicado em **https://dashboard-de-dados.pages.dev** (projeto `dashboard-de-dados` na conta Cloudflare do usuário, via upload direto / Wrangler — sem repositório Git conectado).
+O site está publicado em **https://gabrielrmov.github.io/dashboard-de-dados/**
+
+Repositório: https://github.com/gabrielrmov/dashboard-de-dados (branch `main`, pasta raiz, publicado via GitHub Pages — Settings → Pages).
+
+> Nota: uma tentativa anterior de publicar no Cloudflare Pages foi abandonada porque a plataforma retornava erro 404 para qualquer deploy feito nessa conta (deploys marcados como "sucesso" no painel, mas o site nunca ficava acessível — problema do lado da Cloudflare, não do processo de deploy). O GitHub Pages funcionou de primeira.
 
 Para atualizar o site publicado depois de editar `index.html`:
 
-1. No painel da Cloudflare (**Trabalhadores e Páginas → dashboard-de-dados**), use **Create deployment** e arraste o novo `index.html`, ou
-2. Rode `npx wrangler@latest pages deploy .` dentro da pasta do projeto, com a variável `CLOUDFLARE_API_TOKEN` definida (token com permissão **Conta → Cloudflare Pages → Editar**).
+1. Pela interface do GitHub: abra o repositório, clique em `index.html` → ícone de lápis (editar) → "Commit changes", ou use "Add file → Upload files" para substituir o arquivo.
+2. Ou clonando o repositório localmente e usando git normalmente (`git add`, `git commit`, `git push`).
+
+O GitHub Pages republica automaticamente em cerca de 1 minuto após cada push na branch `main`.
 
 ## Conectar um domínio próprio
 
-1. No painel da Cloudflare, abra o projeto **dashboard-de-dados → Custom domains → Set up a custom domain**.
-2. Digite o domínio ou subdomínio desejado (ex: `dashboard.seusite.com.br`).
-3. Se o domínio já estiver na Cloudflare, o DNS é configurado automaticamente. Caso contrário, a Cloudflare mostra o registro `CNAME` para criar no seu provedor de domínio atual.
-4. O certificado HTTPS é emitido automaticamente pela Cloudflare, geralmente em poucos minutos.
+1. No repositório, vá em **Settings → Pages → Custom domain**, digite o domínio e salve. Isso cria um arquivo `CNAME` no repositório.
+2. No seu provedor de domínio, crie um registro:
+   - **Subdomínio** (ex: `dashboard.seusite.com.br`): um registro `CNAME` apontando para `gabrielrmov.github.io`.
+   - **Domínio raiz** (ex: `seusite.com.br`): registros `A` apontando para os IPs do GitHub Pages:
+     `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
+3. Marque **Enforce HTTPS** assim que o certificado ficar disponível (pode levar até 24h).
 
 ## Atualizar o dashboard
 
-O arquivo é `index.html`. Edite localmente e publique de novo pelo painel da Cloudflare ou via Wrangler (veja acima). O histórico de versões também está neste repositório git local.
+O arquivo é `index.html`. Edite, publique de novo (veja acima) — o histórico de versões também está neste repositório git local (`/tmp/dashboard/repo`, ainda não sincronizado com o remoto além do primeiro upload).
