@@ -874,6 +874,55 @@ function renderDotPlot(host, xs, decimals) {
   host.appendChild(svg);
 }
 
+// Versão do gráfico de pontos para variável qualitativa: em vez de posicionar
+// os pontos numa reta numérica (não existe pra categoria), cada categoria
+// vira uma coluna no eixo x — igual ao gráfico de colunas — e as respostas
+// empilham um ponto por resposta, pra continuar sendo "um ponto = uma
+// resposta" como no gráfico de pontos original.
+function renderDotPlotQual(host, data, colorMap) {
+  clear(host);
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const long = data.length > 5 || data.some(d => d.label.length > 10);
+  const dotR = 5.5, dotStep = 13;
+  const maxCount = Math.max(...data.map(d => d.value), 1);
+  const W = 640, top = 30, bottom = long ? 92 : 54, left = 30, right = 20;
+  const ph = Math.max(130, (maxCount - 1) * dotStep + dotR * 2 + 14);
+  const H = top + ph + bottom;
+  const pw = W - left - right;
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%" });
+  const band = pw / data.length;
+  const baseY = top + ph;
+
+  svg.appendChild(svgEl("line", { x1: left, x2: left + pw, y1: baseY, y2: baseY, stroke: "var(--baseline)", "stroke-width": 1 }));
+
+  data.forEach((d, i) => {
+    const cx = left + i * band + band / 2;
+    const color = (colorMap && colorMap[d.label]) || "var(--accent)";
+    const p = Math.round((d.value / total) * 100);
+    for (let k = 0; k < d.value; k++) {
+      const cy = baseY - dotR - 4 - k * dotStep;
+      const dot = svgEl("circle", { cx, cy, r: dotR, fill: color, stroke: "var(--surface)", "stroke-width": 1.5, style: "cursor:pointer" });
+      attachTip(dot, `<b>${d.label}</b><br>${d.value} de ${total} · ${p}%`);
+      svg.appendChild(dot);
+    }
+    if (d.value > 0) {
+      const val = svgEl("text", {
+        x: cx, y: baseY - dotR * 2 - 8 - (d.value - 1) * dotStep,
+        "text-anchor": "middle", "font-size": 11, fill: "var(--ink-2)", "font-family": "var(--font-mono)"
+      });
+      val.textContent = d.value;
+      svg.appendChild(val);
+    }
+    const lx = cx, ly = baseY + 16;
+    const lbl = svgEl("text", { x: lx, y: ly, "font-size": 10.5, fill: "var(--ink-2)" });
+    if (long) { lbl.setAttribute("transform", `rotate(-32 ${lx} ${ly})`); lbl.setAttribute("text-anchor", "end"); }
+    else lbl.setAttribute("text-anchor", "middle");
+    lbl.textContent = d.label.length > 16 ? d.label.slice(0, 15) + "…" : d.label;
+    svg.appendChild(lbl);
+  });
+  host.appendChild(svg);
+}
+
 function renderOgive(host, classes, n) {
   clear(host);
   const boundaries = [{ x: classes[0].Li, y: 0 }].concat(classes.map(c => ({ x: c.Ls, y: c.cum })));
@@ -1155,12 +1204,16 @@ function renderBoxplotStats(host, xs, decimals) {
 // All 7 chart types always exist in the dropdown; the quantOnly ones are
 // merely disabled (not hidden) when the current column is qualitative, so
 // the full list is visible even before the user picks a numeric variable.
+// Só Ogiva e Boxplot dependem de uma reta numérica de verdade (frequência
+// acumulada / quartis) e continuam exclusivos de variável quantitativa; o
+// gráfico de pontos ganhou uma versão por categoria (ver renderDotPlotQual),
+// então funciona para as duas.
 const CHART_OPTIONS = [
   { v: "bar-h", label: "Gráfico de Barras (horizontal)", quantOnly: false },
   { v: "col-v", label: "Gráfico de Colunas (vertical)", quantOnly: false },
   { v: "pie", label: "Gráfico de Pizza", quantOnly: false },
   { v: "line", label: "Gráfico de Linha", quantOnly: false },
-  { v: "dots", label: "Gráfico de Pontos", quantOnly: true },
+  { v: "dots", label: "Gráfico de Pontos", quantOnly: false },
   { v: "ogive", label: "Gráfico de Ogiva", quantOnly: true },
   { v: "box", label: "Boxplot", quantOnly: true }
 ];
@@ -1266,6 +1319,7 @@ function renderAll() {
     else if (STATE.chartType === "col-v") renderColumnsVert(chartHost, freq.data, colorMap);
     else if (STATE.chartType === "pie") renderPie(chartHost, freq.data, "identity", colorMap);
     else if (STATE.chartType === "line") renderLine(chartHost, freq.data, "identity", colorMap);
+    else if (STATE.chartType === "dots") renderDotPlotQual(chartHost, freq.data, colorMap);
     renderQualStats(statsHost, freq);
     return;
   }
