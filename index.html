@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard de Dados</title>
+<script>
+// Aplica o tema salvo (se houver) antes da primeira pintura, pra não piscar
+// o tema errado por uma fração de segundo ao carregar a página.
+(function () {
+  try {
+    var t = localStorage.getItem("dashboard-theme");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>
 <style>
   :root {
     color-scheme: light;
@@ -21,9 +31,14 @@
 
     --s-blue:    #2a78d6;
     --s-orange:  #eb6834;
-    --s-aqua:    #1baf7a;
-    --s-yellow:  #eda100;
-    --s-magenta: #e87ba4;
+    /* aqua/amarelo/magenta escurecidos em relação à versão "óbvia" da cor —
+       nos tons originais (#1baf7a / #eda100 / #e87ba4) o contraste contra o
+       fundo branco ficava abaixo de 3:1 (mínimo do WCAG pra elementos
+       gráficos como fatias de gráfico e legendas), quase somem em telas
+       mais claras ou com brilho baixo. */
+    --s-aqua:    #19a06f;
+    --s-yellow:  #be8100;
+    --s-magenta: #e36091;
     --s-green:   #008300;
     --s-violet:  #4a3aa7;
     --s-red:     #e34948;
@@ -121,6 +136,9 @@
   }
   .lede { font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 48ch; margin: 0; }
 
+  .header-actions {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  }
   .import-block {
     display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 240px;
   }
@@ -132,6 +150,8 @@
   }
   .file-btn:hover { border-color: var(--accent); color: var(--accent); }
   .file-btn input[type="file"] { display: none; }
+  .theme-toggle { border: none; background: transparent; padding: 6px 2px; color: var(--ink-3); font-size: 15px; }
+  .theme-toggle:hover { color: var(--accent); border-color: transparent; }
   .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; }
   .source-line button {
     background: none; border: none; color: var(--accent); font-family: var(--font-mono); font-size: 11px;
@@ -271,8 +291,10 @@
     header.top { gap: 16px; padding-bottom: 20px; margin-bottom: 20px; }
     h1 { font-size: clamp(26px, 8vw, 34px); max-width: none; }
     .lede { max-width: none; }
+    .header-actions { width: 100%; }
     .import-block { min-width: 0; width: 100%; }
     .file-btn { width: 100%; justify-content: center; }
+    .theme-toggle { width: auto; align-self: flex-end; }
     .source-line, .import-error { max-width: none; }
 
     .controls { padding: 16px 14px; gap: 16px 20px; border-radius: 12px; }
@@ -312,13 +334,16 @@
       <h1>Dashboard de Dados</h1>
       <p class="lede">Escolha uma pergunta, o tipo de gráfico e veja a tabela de frequência, as medidas de posição e os quartis calculados na hora — com ou sem intervalo de classe. Importe seu próprio CSV para analisar outros dados.</p>
     </div>
-    <div class="import-block">
-      <label class="file-btn">
-        📄 Importar CSV
-        <input type="file" id="fileInput" accept=".csv,text/csv">
-      </label>
-      <div class="source-line" id="sourceLine"></div>
-      <div class="import-error" id="importError" hidden></div>
+    <div class="header-actions">
+      <button type="button" class="file-btn theme-toggle" id="themeToggle"></button>
+      <div class="import-block">
+        <label class="file-btn">
+          📄 Importar CSV
+          <input type="file" id="fileInput" accept=".csv,text/csv">
+        </label>
+        <div class="source-line" id="sourceLine"></div>
+        <div class="import-error" id="importError" hidden></div>
+      </div>
     </div>
   </header>
 
@@ -1363,7 +1388,43 @@ document.getElementById("exportStats").addEventListener("click", () => {
 });
 
 /* =================================================================
-   12. Init
+   12. Tema (claro/escuro)
+   ================================================================= */
+(function initThemeToggle() {
+  const KEY = "dashboard-theme";
+  const html = document.documentElement;
+  const btn = document.getElementById("themeToggle");
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  let pref = null;
+  try { pref = localStorage.getItem(KEY); } catch (e) {}
+
+  function effective() {
+    return (pref === "light" || pref === "dark") ? pref : (mq.matches ? "dark" : "light");
+  }
+  function render() {
+    const isDark = effective() === "dark";
+    btn.textContent = isDark ? "☀️ Modo claro" : "🌙 Modo escuro";
+    btn.setAttribute("aria-label", isDark ? "Mudar para o modo claro" : "Mudar para o modo escuro");
+  }
+  function apply() {
+    if (pref === "light" || pref === "dark") html.setAttribute("data-theme", pref);
+    else html.removeAttribute("data-theme");
+    render();
+  }
+
+  apply();
+  btn.addEventListener("click", () => {
+    pref = effective() === "dark" ? "light" : "dark";
+    try { localStorage.setItem(KEY, pref); } catch (e) {}
+    apply();
+  });
+  // Se o usuário nunca escolheu um tema manualmente, acompanha mudanças do
+  // sistema (ex.: o SO alterna de claro pra escuro à noite).
+  mq.addEventListener("change", () => { if (pref === null) render(); });
+})();
+
+/* =================================================================
+   13. Init
    ================================================================= */
 // Opens on the one numeric column in the sample data (Idade) so every chart
 // type — including the quantitative-only ones — and the full stats panel
