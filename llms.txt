@@ -1,0 +1,6 @@
+# Dashboard de Dados
+
+> Ferramenta interativa e gratuita de estatística descritiva em português: a pessoa escolhe uma pergunta e o tipo de gráfico (barras, colunas, pizza, linha, pontos, ogiva, boxplot) e vê a tabela de frequência, as medidas de posição e os quartis, com ou sem intervalo de classe. Vem com dados de exemplo (pesquisa sobre uso de redes sociais, n = 16) e aceita importar CSV.
+
+- [Dashboard](https://gabrielrmov.github.io/dashboard-de-dados/): a ferramenta (página única, funciona no navegador, sem cadastro).
+- [Código-fonte](https://github.com/gabrielrmov/dashboard-de-dados)
