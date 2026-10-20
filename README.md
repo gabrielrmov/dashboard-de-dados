@@ -1,8 +1,14 @@
 # Dashboard de Dados
 
-Ferramenta interativa de análise estatística: escolha uma pergunta, o tipo de gráfico (barras, colunas, pizza, linha, pontos, ogiva, boxplot) e veja tabela de frequência, medidas de posição e quartis — com ou sem intervalo de classe. Vem com os dados de exemplo da pesquisa "Uso das redes sociais e da internet no dia a dia" (n = 16) e permite importar qualquer outro CSV.
+Ferramenta interativa de análise estatística: escolha uma pergunta, o tipo de gráfico (barras, colunas, pizza, linha, pontos, ogiva, boxplot) e veja tabela de frequência, medidas de posição e quartis — com ou sem intervalo de classe. Vem com os dados de exemplo da pesquisa "Uso das redes sociais e da internet no dia a dia" (n = 16) e permite importar qualquer outro CSV ou XLSX.
 
 Site estático de uma página só (`index.html`).
+
+## Histórico de versões
+- **v2.8** — importação de planilhas `.xlsx`/`.xls` (primeira aba, via SheetJS) e CSV com separador `;` (Excel pt-BR). Restaura o `index.html` completo, que havia sido sobrescrito por uma versão truncada sem JavaScript.
+- v2.7 — gráfico de Pontos para variável qualitativa.
+- v2.6 — modo claro/escuro manual e contraste de cores.
+- v2.5 — PNG sem fundo e layout mobile.
 
 ## Publicado no GitHub Pages
 
