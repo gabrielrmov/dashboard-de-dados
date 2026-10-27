@@ -443,6 +443,12 @@ function parseCSV(text) {
 
 function parseNumber(str) {
   if (str === undefined || str === null) return null;
+  // faixas como "3 a 5 horas" ou "6-8h" viram o ponto médio; "2 horas" vira 2
+  const NUM = "(\\d+(?:[.,]\\d+)?)", UNIT = "(?:\\s*(?:horas?|hrs?|h|min(?:utos?)?|anos?|dias?))?";
+  const rg = String(str).trim().toLowerCase().match(new RegExp("^" + NUM + "\\s*(?:a|à|-|–|até)\\s*" + NUM + UNIT + "$"));
+  if (rg) return (parseFloat(rg[1].replace(",", ".")) + parseFloat(rg[2].replace(",", "."))) / 2;
+  const un = String(str).trim().toLowerCase().match(new RegExp("^" + NUM + "\\s*(?:horas?|hrs?|h|min(?:utos?)?|anos?)$"));
+  if (un) return parseFloat(un[1].replace(",", "."));
   const s = String(str).trim().replace(/\./g, "").replace(",", ".");
   // the line above assumes pt-BR thousand '.' / decimal ',' when a comma is present;
   // fall back to plain parse for plain '12.5' style values with no comma
