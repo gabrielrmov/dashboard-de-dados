@@ -137,10 +137,11 @@
   .lede { font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 48ch; margin: 0; }
 
   .header-actions {
+    flex: 0 0 auto; max-width: 100%;
     display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
   }
   .import-block {
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 240px;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; width: 260px; max-width: 100%;
   }
   .file-btn {
     font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
@@ -152,7 +153,7 @@
   .file-btn input[type="file"] { display: none; }
   .theme-toggle { border: none; background: transparent; padding: 6px 2px; color: var(--ink-3); font-size: 15px; }
   .theme-toggle:hover { color: var(--accent); border-color: transparent; }
-  .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; }
+  .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; overflow-wrap: anywhere; }
   .source-line button {
     background: none; border: none; color: var(--accent); font-family: var(--font-mono); font-size: 11px;
     cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px;
@@ -488,6 +489,14 @@ const DEFAULT_CSV = `Carimbo de data/hora,Nome,Idade,Quantas horas por dia você
 31/08/2026 12:14:49,Erica,43,6 a 8 horas,Quase sempre (5-6 dias por semana),Smartphone,Frequentemente,Definitivamente sim,"Sim, às vezes","Sim, várias vezes",Vídeos curtos (até 1 min),Na maioria das vezes,Como principal meio de comunicação,Muito importante,WhatsApp,Raramente,"Sim, com sucesso",Muito,Sempre,Desconfio de algumas,"Sim, às vezes",Prefiro por mensagens,Frequentemente,Mais durante o dia,Difícil,Mais positivas que negativas,"Sim, um pouco",WhatsApp`;
 
 const DEFAULT_EXCLUDE = ["Carimbo de data/hora", "Nome"];
+// Em arquivos importados, esconde colunas de identificação (timestamp e nome do respondente).
+function autoExclude(headers) {
+  const norm = h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[?:.]/g, "").trim();
+  return headers.filter(h => {
+    const n = norm(h);
+    return n.startsWith("carimbo de data") || n === "nome" || n === "qual seu nome" || n === "qual e seu nome" || n === "qual o seu nome";
+  });
+}
 const DEFAULT_SOURCE_NAME = "pesquisa-redes-sociais.csv";
 
 /* =================================================================
@@ -507,7 +516,7 @@ function loadDataset(csvText, sourceName, excluded) {
   const { headers, data } = parseCSV(csvText);
   STATE.headers = headers;
   STATE.data = data;
-  STATE.excluded = excluded || [];
+  STATE.excluded = excluded || autoExclude(headers);
   STATE.sourceName = sourceName;
   populateColumnSelect();
 }
@@ -1388,7 +1397,7 @@ document.getElementById("fileInput").addEventListener("change", (e) => {
       } else {
         text = String(reader.result);
       }
-      loadDataset(text, file.name, []);
+      loadDataset(text, file.name);
     } catch (err) {
       fail("Não consegui ler esse arquivo: " + err.message);
     }
