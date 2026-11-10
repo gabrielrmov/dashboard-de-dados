@@ -223,6 +223,8 @@
     padding: 7px 11px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex: none;
     transition: border-color .15s ease, color .15s ease;
   }
+  .empty-state { font-size: 15px; line-height: 1.6; color: var(--ink-2); text-align: center; padding: 72px 16px; border: 1px dashed var(--border); border-radius: 12px; margin: 0; }
+  .empty-state[hidden], .controls[hidden], .main-grid[hidden] { display: none; }
   .export-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   .export-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -350,7 +352,9 @@
     </div>
   </header>
 
-  <section class="controls">
+  <p class="empty-state" id="emptyState" hidden>Nenhuma tabela importada. Use o botão <b>Importar CSV ou XLSX</b> para começar.</p>
+
+  <section class="controls" id="controlsSection">
     <div class="control-block">
       <label class="control-label" for="colSelect">Pergunta / variável</label>
       <select id="colSelect"></select>
@@ -372,7 +376,7 @@
     </div>
   </section>
 
-  <div class="main-grid">
+  <div class="main-grid" id="mainGrid">
     <div class="card" id="chartCard">
       <div class="card-head">
         <div>
@@ -1271,17 +1275,31 @@ function populateColumnSelect() {
   const cols = activeColumns();
   STATE.col = cols.indexOf(STATE.col) !== -1 ? STATE.col : (cols.length > 2 ? cols[2] : cols[0]);
   colSelect.value = STATE.col;
+  setEmpty(false);
   sourceLine.textContent = `Usando: ${STATE.sourceName} · ${STATE.data.length} linhas` + (STATE.sourceName === DEFAULT_SOURCE_NAME ? "" : "  ·  ");
-  if (STATE.sourceName !== DEFAULT_SOURCE_NAME) {
-    const btn = document.createElement("button");
-    btn.textContent = "usar dados de exemplo";
-    btn.addEventListener("click", () => {
-      loadDataset(DEFAULT_CSV, DEFAULT_SOURCE_NAME, DEFAULT_EXCLUDE);
-      onColumnChange();
-    });
-    sourceLine.appendChild(btn);
-  }
+  if (STATE.sourceName !== DEFAULT_SOURCE_NAME) appendExampleLink();
   onColumnChange();
+}
+
+function appendExampleLink() {
+  const btn = document.createElement("button");
+  btn.textContent = "usar dados de exemplo";
+  btn.addEventListener("click", () => {
+    loadDataset(DEFAULT_CSV, DEFAULT_SOURCE_NAME, DEFAULT_EXCLUDE);
+    onColumnChange();
+  });
+  sourceLine.appendChild(btn);
+}
+
+// Estado inicial: sem nenhuma tabela carregada até o usuário importar um arquivo
+function setEmpty(empty) {
+  document.getElementById("emptyState").hidden = !empty;
+  document.getElementById("controlsSection").hidden = empty;
+  document.getElementById("mainGrid").hidden = empty;
+  if (empty) {
+    sourceLine.textContent = "Nenhuma tabela importada  ·  ";
+    appendExampleLink();
+  }
 }
 
 function populateChartSelect(isQuant, preferred) {
@@ -1554,15 +1572,8 @@ document.getElementById("exportStats").addEventListener("click", () => {
 /* =================================================================
    13. Init
    ================================================================= */
-// Opens on the one numeric column in the sample data (Idade) so every chart
-// type — including the quantitative-only ones — and the full stats panel
-// (média/mediana/moda/quartis, com e sem intervalo de classe) are visible
-// on first load, instead of only the 4 qualitative options.
-loadDataset(DEFAULT_CSV, DEFAULT_SOURCE_NAME, DEFAULT_EXCLUDE);
-STATE.col = "Idade";
-STATE.chartType = "box";
-colSelect.value = STATE.col;
-onColumnChange();
+// Abre sem nenhuma tabela carregada; os dados de exemplo só entram pelo link "usar dados de exemplo".
+setEmpty(true);
 
 })();
 </script>
