@@ -149,6 +149,13 @@
     padding: 9px 14px; border-radius: 7px; cursor: pointer; transition: border-color .15s ease, color .15s ease;
     display: inline-flex; align-items: center; gap: 7px;
   }
+  .link-form { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .link-form input {
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-1); width: 100%;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px;
+  }
+  .link-form input::placeholder { color: var(--ink-3); }
+  .link-form .file-btn { justify-content: center; }
   .file-btn:hover { border-color: var(--accent); color: var(--accent); }
   .file-btn input[type="file"] { display: none; }
   .theme-toggle { border: none; background: transparent; padding: 6px 2px; color: var(--ink-3); font-size: 15px; }
@@ -353,6 +360,10 @@
           📄 Importar CSV ou XLSX
           <input type="file" id="fileInput" accept=".csv,text/csv,.xlsx,.xls">
         </label>
+        <form class="link-form" id="linkForm">
+          <input type="url" id="linkInput" placeholder="ou cole o link do Google Planilhas" aria-label="Link da planilha" autocomplete="off">
+          <button type="submit" class="file-btn" id="linkBtn">Importar link</button>
+        </form>
         <div class="source-line" id="sourceLine"></div>
         <div class="import-error" id="importError" hidden></div>
       </div>
@@ -1435,6 +1446,33 @@ groupingBtns.forEach(b => b.addEventListener("click", () => {
   updateGroupingUI();
   renderAll();
 }));
+
+// Importa direto de um link do Google Planilhas (a planilha precisa estar compartilhada como "qualquer pessoa com o link")
+document.getElementById("linkForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const url = document.getElementById("linkInput").value.trim();
+  const btn = document.getElementById("linkBtn");
+  const fail = (msg) => { importError.hidden = false; importError.textContent = msg; };
+  importError.hidden = true;
+  const m = url.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/);
+  if (!m) { fail("Cole um link do Google Planilhas (docs.google.com/spreadsheets/d/…)."); return; }
+  const gid = (url.match(/[#&?]gid=(\d+)/) || [])[1];
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv` + (gid ? `&gid=${gid}` : "");
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Importando…";
+  try {
+    const res = await fetch(csvUrl);
+    const text = await res.text();
+    if (!res.ok || /^\s*</.test(text)) throw new Error("a planilha não está acessível. Em Compartilhar, deixe como \"qualquer pessoa com o link\" (leitor).");
+    loadDataset(text, "Google Planilhas");
+  } catch (err) {
+    fail(err instanceof TypeError
+      ? "Não consegui abrir o link. Verifique a conexão e se a planilha está compartilhada como \"qualquer pessoa com o link\" (leitor)."
+      : "Não consegui importar o link: " + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+});
 
 document.getElementById("fileInput").addEventListener("change", (e) => {
   const file = e.target.files[0];
