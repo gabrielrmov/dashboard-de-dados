@@ -184,6 +184,13 @@
     background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
     cursor: pointer; width: 100%;
   }
+  .opts { margin-top: 12px; font-size: 12.5px; color: var(--ink-2); }
+  .opts[hidden] { display: none; }
+  .opts summary { cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; }
+  .opts textarea {
+    width: 100%; margin-top: 8px; font-family: var(--font-body); font-size: 13px; color: var(--ink-1);
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; resize: vertical;
+  }
   .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .badge {
     font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
@@ -362,6 +369,10 @@
         <span class="badge" id="typeBadge"></span>
         <span class="meta-n" id="validN"></span>
       </div>
+      <details class="opts" id="optsDetails" hidden>
+        <summary>Opções do formulário (mostrar as sem resposta)</summary>
+        <textarea id="optsInput" rows="5" placeholder="Uma opção por linha, na ordem do formulário. Opções sem resposta aparecem zeradas."></textarea>
+      </details>
     </div>
     <div class="control-block">
       <label class="control-label" for="chartSelect">Tipo de gráfico</label>
@@ -519,6 +530,7 @@ let STATE = {
   headers: [],
   data: [],
   excluded: [],
+  options: {}, // pergunta -> lista de opções do formulário (para mostrar as sem resposta, zeradas)
   sourceName: DEFAULT_SOURCE_NAME,
   col: null,
   chartType: null,
@@ -530,6 +542,7 @@ function loadDataset(csvText, sourceName, excluded) {
   STATE.headers = headers;
   STATE.data = data;
   STATE.excluded = excluded || autoExclude(headers);
+  STATE.options = {};
   STATE.sourceName = sourceName;
   populateColumnSelect();
 }
@@ -654,6 +667,13 @@ function qualFrequency(col) {
   // respostas que começam com número (ex.: "1 a 3 horas", "6 a 8 horas") ficam em ordem crescente
   const lead = l => { const m = String(l).trim().match(/^(\d+(?:[.,]\d+)?)/); return m ? parseFloat(m[1].replace(",", ".")) : null; };
   if (arr.length && arr.every(d => lead(d.label) !== null)) arr.sort((a, b) => lead(a.label) - lead(b.label));
+  // opções informadas pelo usuário: as sem resposta entram com 0, na ordem do formulário
+  const opts = STATE.options[col];
+  if (opts && opts.length) {
+    opts.forEach(o => { if (!freq.has(o)) arr.push({ label: o, value: 0 }); });
+    const idx = l => { const i = opts.indexOf(l); return i === -1 ? opts.length : i; };
+    arr.sort((a, b) => idx(a.label) - idx(b.label));
+  }
   return { data: arr, total: raw.length };
 }
 
@@ -1322,6 +1342,9 @@ function onColumnChange() {
   typeBadge.className = "badge " + (isQuant ? "quant" : "qual");
   const nums = columnNumbers(STATE.col);
   validNEl.textContent = isQuant ? `n = ${nums.valid.length} de ${nums.raw.length} respostas válidas` : `n = ${columnRaw(STATE.col).length} respostas`;
+  const optsDetails = document.getElementById("optsDetails");
+  optsDetails.hidden = isQuant;
+  document.getElementById("optsInput").value = (STATE.options[STATE.col] || []).join("\n");
   populateChartSelect(isQuant, STATE.chartType);
   updateGroupingUI();
   renderAll();
@@ -1401,6 +1424,10 @@ function renderAll() {
    11. Events
    ================================================================= */
 colSelect.addEventListener("change", onColumnChange);
+document.getElementById("optsInput").addEventListener("input", e => {
+  STATE.options[STATE.col] = e.target.value.split("\n").map(l => l.trim()).filter(Boolean);
+  renderAll();
+});
 chartSelect.addEventListener("change", () => { STATE.chartType = chartSelect.value; updateGroupingUI(); renderAll(); });
 groupingBtns.forEach(b => b.addEventListener("click", () => {
   if (b.disabled) return;
