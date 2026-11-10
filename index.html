@@ -28,6 +28,10 @@
     --grid:        #e6e3db;
     --accent:      #2454d1;
     --accent-soft: #e7edfb;
+    --hero-1: #2f62e0;
+    --hero-2: #17327f;
+    --hero-title: #bcd0ff;
+    --shadow: 0 1px 2px rgba(23,22,26,0.04), 0 10px 30px -12px rgba(36,84,209,0.18);
 
     --s-blue:    #2a78d6;
     --s-orange:  #eb6834;
@@ -66,6 +70,10 @@
       --grid:        #29282e;
       --accent:      #7396ff;
       --accent-soft: rgba(115,150,255,0.14);
+      --hero-1: #2a4fb8;
+      --hero-2: #0f1b45;
+      --hero-title: #a9c1ff;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.6);
 
       --s-blue:    #3987e5;
       --s-orange:  #d95926;
@@ -95,6 +103,10 @@
     --grid:        #29282e;
     --accent:      #7396ff;
     --accent-soft: rgba(115,150,255,0.14);
+    --hero-1: #2a4fb8;
+    --hero-2: #0f1b45;
+    --hero-title: #a9c1ff;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.6);
 
     --s-blue:    #3987e5;
     --s-orange:  #d95926;
@@ -122,50 +134,85 @@
   .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
 
   /* ---------- header ---------- */
-  header.top {
-    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
-    gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+  header.top { margin-bottom: 28px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .pill {
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--surface); color: var(--ink-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 10px 18px; box-shadow: var(--shadow);
   }
-  .eyebrow {
-    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--accent); margin: 0 0 12px;
+  .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -0.03em; color: var(--accent); }
+  .wordmark b { color: var(--s-orange); }
+  .theme-toggle { cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+  .hero {
+    position: relative; overflow: hidden; border-radius: 40px; box-shadow: var(--shadow);
+    padding: 56px 48px 40px; min-height: 520px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px;
+    background:
+      radial-gradient(800px 360px at 90% -10%, rgba(255,255,255,0.22), transparent 60%),
+      radial-gradient(600px 300px at 0% 110%, rgba(255,255,255,0.10), transparent 60%),
+      linear-gradient(165deg, var(--hero-1) 0%, var(--hero-2) 100%);
   }
   h1 {
-    font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 4.6vw, 42px);
-    line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; max-width: 16ch;
+    position: relative; margin: 0; font-family: var(--font-display); font-weight: 800; color: var(--hero-title);
+    font-size: clamp(44px, 10.5vw, 148px); line-height: 0.92; letter-spacing: -0.04em;
   }
-  .lede { font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 48ch; margin: 0; }
+  .tag {
+    position: absolute; top: -6px; right: 4%; transform: rotate(14deg);
+    font-family: var(--font-mono); font-size: clamp(10px, 1.2vw, 14px); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    background: #fff; color: var(--hero-2); padding: 9px 16px; border-radius: 999px; white-space: nowrap;
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,0.5);
+  }
+  .spark { position: absolute; color: rgba(255,255,255,0.85); font-size: 22px; line-height: 1; pointer-events: none; }
+  .spark.s1 { left: 9%; top: 52%; }
+  .spark.s2 { right: 9%; top: 24%; font-size: 16px; }
 
-  .header-actions {
-    flex: 0 0 auto; max-width: 100%;
-    display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  .hero-bottom { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: 28px; flex-wrap: wrap; }
+  .hero-left { display: flex; flex-direction: column; gap: 22px; max-width: 420px; }
+  .lede { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.9); margin: 0; }
+  .cta {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 14px; cursor: pointer;
+    background: #0d1f52; color: #fff; font-weight: 700; font-size: 14px; padding: 8px 8px 8px 24px; border-radius: 999px;
+    box-shadow: 0 12px 28px -12px rgba(0,0,0,0.6); transition: transform .15s ease, background .15s ease;
   }
-  .import-block {
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; width: 260px; max-width: 100%;
+  .cta:hover { transform: translateY(-1px); background: #0a1740; }
+  .cta input[type="file"] { display: none; }
+  .cta-arrow {
+    width: 38px; height: 38px; border-radius: 50%; background: #fff; color: #0d1f52; font-style: normal; font-size: 24px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; padding-bottom: 3px;
   }
-  .file-btn {
-    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
-    background: var(--surface); border: 1px solid var(--border); color: var(--ink-2);
-    padding: 9px 14px; border-radius: 7px; cursor: pointer; transition: border-color .15s ease, color .15s ease;
-    display: inline-flex; align-items: center; gap: 7px;
+  .hero-card {
+    width: 290px; max-width: 100%; background: var(--surface); border-radius: 28px; padding: 20px;
+    box-shadow: 0 24px 50px -20px rgba(0,0,0,0.55); display: flex; flex-direction: column; gap: 10px;
   }
-  .link-form { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .hero-card-title { margin: 0; font-weight: 800; font-size: 16px; color: var(--ink-1); }
+  .link-form { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .link-form input {
     font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-1); width: 100%;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 11px 16px;
   }
   .link-form input::placeholder { color: var(--ink-3); }
-  .link-form .file-btn { justify-content: center; }
-  .file-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .file-btn input[type="file"] { display: none; }
-  .theme-toggle { border: none; background: transparent; padding: 6px 2px; color: var(--ink-3); font-size: 15px; }
-  .theme-toggle:hover { color: var(--accent); border-color: transparent; }
-  .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; overflow-wrap: anywhere; }
+  .mini-btn {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700;
+    background: var(--accent); color: #fff; border: none; border-radius: 999px; padding: 11px 18px; cursor: pointer;
+  }
+  .mini-btn:hover { filter: brightness(1.1); }
+  .mini-btn:disabled { opacity: 0.6; cursor: wait; }
+  .source-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); overflow-wrap: anywhere; line-height: 1.5; }
   .source-line button {
     background: none; border: none; color: var(--accent); font-family: var(--font-mono); font-size: 11px;
     cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px;
   }
-  .import-error { font-size: 11.5px; color: var(--critical); text-align: right; max-width: 260px; }
+  .import-error { font-size: 11.5px; color: var(--critical); }
+
+  .features { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .features li {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 18px 20px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .features b { font-size: 14px; color: var(--ink-1); }
+  .features span { font-size: 12px; color: var(--ink-3); line-height: 1.4; }
 
   button:focus-visible, select:focus-visible, a:focus-visible, input:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px;
@@ -173,8 +220,8 @@
 
   /* ---------- controls ---------- */
   .controls {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-    padding: 22px 24px; margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 28px; box-shadow: var(--shadow);
+    padding: 26px 30px; margin-bottom: 24px;
     display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px;
   }
   .control-block { display: flex; flex-direction: column; gap: 8px; }
@@ -185,8 +232,8 @@
   }
   select {
     font-family: var(--font-body); font-size: 14.5px; font-weight: 600; color: var(--ink-1);
-    background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
-    padding: 11px 38px 11px 14px; appearance: none;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 18px;
+    padding: 13px 42px 13px 18px; appearance: none;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'><path d='M5 8l5 5 5-5' stroke='%2356545c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
     background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
     cursor: pointer; width: 100%;
@@ -201,14 +248,14 @@
   .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .badge {
     font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; padding: 4px 9px; border-radius: 999px; border: 1px solid transparent;
+    text-transform: uppercase; padding: 5px 12px; border-radius: 999px; border: 1px solid transparent;
   }
   .badge.quant { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
   .badge.qual  { background: color-mix(in oklab, var(--s-aqua) 16%, var(--surface)); color: var(--s-aqua); border-color: var(--s-aqua); }
   .meta-n { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3); }
 
   .segmented {
-    display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; width: fit-content;
+    display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; width: fit-content;
   }
   .segmented button {
     font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; padding: 9px 16px;
@@ -224,8 +271,8 @@
   .main-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; align-items: start; }
 
   .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-    padding: 22px 24px 24px; display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 28px; box-shadow: var(--shadow);
+    padding: 28px 30px 30px; display: flex; flex-direction: column;
   }
   .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 4px; }
   .card-q { font-size: 15px; font-weight: 700; color: var(--ink-1); line-height: 1.35; margin: 0; max-width: 46ch; }
@@ -234,10 +281,10 @@
   .export-btn {
     font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase;
     background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2);
-    padding: 7px 11px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex: none;
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; flex: none;
     transition: border-color .15s ease, color .15s ease;
   }
-  .empty-state { font-size: 15px; line-height: 1.6; color: var(--ink-2); text-align: center; padding: 72px 16px; border: 1px dashed var(--border); border-radius: 12px; margin: 0; }
+  .empty-state { font-size: 15px; line-height: 1.6; color: var(--ink-2); text-align: center; padding: 72px 16px; border: 1px dashed var(--border); border-radius: 28px; margin: 0; }
   .empty-state[hidden], .controls[hidden], .main-grid[hidden] { display: none; }
   .export-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   .export-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -256,7 +303,7 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px;
   }
   .measure {
-    background: var(--surface-2); border-radius: 10px; padding: 12px 12px 10px; display: flex; flex-direction: column; gap: 3px;
+    background: var(--surface-2); border-radius: 18px; padding: 12px 12px 10px; display: flex; flex-direction: column; gap: 3px;
   }
   .measure .m-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
   .measure .m-value { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--ink-1); font-variant-numeric: tabular-nums; }
@@ -294,26 +341,63 @@
   }
   .export-transparent .chart-host { background: transparent !important; }
 
+  /* ---------- refinamento: controles e cartões ---------- */
+  .controls { counter-reset: step; align-items: start; gap: 22px 32px; padding: 28px 32px; }
+  .control-label {
+    counter-increment: step; display: flex; align-items: center; gap: 10px;
+    font-size: 11.5px; font-weight: 600; color: var(--ink-2);
+  }
+  .control-label::before {
+    content: counter(step); width: 24px; height: 24px; border-radius: 50%; flex: none;
+    background: var(--accent); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  select { border-radius: 999px; padding: 14px 46px 14px 22px; transition: border-color .15s ease, box-shadow .15s ease; }
+  select:hover { border-color: var(--accent); }
+  select:focus-visible { box-shadow: 0 0 0 4px var(--accent-soft); outline: none; border-color: var(--accent); }
+  .meta-row { padding-left: 4px; }
+
+  .card { padding: 30px 32px 32px; }
+  .card-head { align-items: center; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .card-head .card-n { margin-bottom: 0; }
+  .card-q { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+  .card-n { margin: 6px 0 0; }
+
+  .chart-host {
+    background: color-mix(in oklab, var(--surface-2) 60%, transparent); border-radius: 24px;
+    padding: 22px 18px; min-height: 340px;
+  }
+
+  .measures { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .measure { padding: 16px 18px 14px; border: 1px solid var(--border); gap: 6px; }
+  .measure .m-value { font-size: 20px; }
+  .measure:first-child { background: var(--accent); border-color: var(--accent); }
+  .measure:first-child .m-label { color: rgba(255,255,255,0.8); }
+  .measure:first-child .m-value { color: #fff; }
+
+  table.freqtable { border-collapse: separate; border-spacing: 0 6px; }
+  table.freqtable thead th { border: none; padding-bottom: 4px; }
+  table.freqtable tbody td { background: var(--surface-2); border: none; padding: 11px 14px; }
+  table.freqtable tbody td:first-child { border-radius: 14px 0 0 14px; font-weight: 600; }
+  table.freqtable tbody td:last-child { border-radius: 0 14px 14px 0; }
+  table.freqtable tbody tr:hover td { background: var(--accent-soft); }
+
   @media (max-width: 920px) {
     .main-grid { grid-template-columns: 1fr; }
     .controls { grid-template-columns: 1fr; }
-    header.top { align-items: flex-start; }
-    .import-block { align-items: flex-start; }
-    .import-error { text-align: left; }
-    .source-line { text-align: left; }
+    .features { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* ---------- mobile (phones) ---------- */
   @media (max-width: 600px) {
     .wrap { padding: 24px 16px 56px; }
-    header.top { gap: 16px; padding-bottom: 20px; margin-bottom: 20px; }
-    h1 { font-size: clamp(26px, 8vw, 34px); max-width: none; }
-    .lede { max-width: none; }
-    .header-actions { width: 100%; }
-    .import-block { min-width: 0; width: 100%; }
-    .file-btn { width: 100%; justify-content: center; }
-    .theme-toggle { width: auto; align-self: flex-end; }
-    .source-line, .import-error { max-width: none; }
+    .hero { padding: 32px 22px 24px; border-radius: 30px; min-height: 0; }
+    h1 { font-size: clamp(30px, 10vw, 64px); }
+    .tag { position: static; display: inline-block; transform: rotate(-4deg); margin-top: 14px; }
+    .hero-card, .hero-left { width: 100%; max-width: none; }
+    .pill { padding: 8px 12px; font-size: 10px; }
+    .topbar .pill:first-child { display: none; }
+    .features { grid-template-columns: 1fr; }
 
     .controls { padding: 16px 14px; gap: 16px 20px; border-radius: 12px; }
     select { padding: 10px 34px 10px 12px; font-size: 14px; }
@@ -348,26 +432,44 @@
 
 <div class="wrap">
   <header class="top">
-    <div>
-      <p class="eyebrow">Ferramenta de análise estatística</p>
-      <h1>Dashboard de Dados</h1>
-      <p class="lede">Escolha uma pergunta, o tipo de gráfico e veja a tabela de frequência, as medidas de posição e os quartis calculados na hora — com ou sem intervalo de classe. Importe seu próprio CSV para analisar outros dados.</p>
-    </div>
-    <div class="header-actions">
-      <button type="button" class="file-btn theme-toggle" id="themeToggle"></button>
-      <div class="import-block">
-        <label class="file-btn">
-          📄 Importar CSV ou XLSX
-          <input type="file" id="fileInput" accept=".csv,text/csv,.xlsx,.xls">
-        </label>
-        <form class="link-form" id="linkForm">
-          <input type="url" id="linkInput" placeholder="ou cole o link do Google Planilhas" aria-label="Link da planilha" autocomplete="off">
-          <button type="submit" class="file-btn" id="linkBtn">Importar link</button>
-        </form>
-        <div class="source-line" id="sourceLine"></div>
-        <div class="import-error" id="importError" hidden></div>
+    <nav class="topbar">
+      <span class="pill">Ferramenta de análise estatística</span>
+      <span class="wordmark">dados<b>.</b></span>
+      <button type="button" class="pill theme-toggle" id="themeToggle"></button>
+    </nav>
+
+    <div class="hero">
+      <span class="spark s1" aria-hidden="true">✦</span>
+      <span class="spark s2" aria-hidden="true">✦</span>
+      <h1>Dashboard<br>de Dados<span class="tag">Estatística descritiva</span></h1>
+
+      <div class="hero-bottom">
+        <div class="hero-left">
+          <p class="lede">Escolha uma pergunta, o tipo de gráfico e veja a tabela de frequência, as medidas de posição e os quartis calculados na hora — com ou sem intervalo de classe.</p>
+          <label class="cta">
+            <span>Importar CSV ou XLSX</span><i class="cta-arrow" aria-hidden="true">›</i>
+            <input type="file" id="fileInput" accept=".csv,text/csv,.xlsx,.xls">
+          </label>
+        </div>
+
+        <aside class="hero-card">
+          <p class="hero-card-title">Planilha do Google</p>
+          <form class="link-form" id="linkForm">
+            <input type="url" id="linkInput" placeholder="Cole o link da planilha" aria-label="Link da planilha" autocomplete="off">
+            <button type="submit" class="mini-btn" id="linkBtn">Importar link</button>
+          </form>
+          <div class="source-line" id="sourceLine"></div>
+          <div class="import-error" id="importError" hidden></div>
+        </aside>
       </div>
     </div>
+
+    <ul class="features">
+      <li><b>Tabela de frequência</b><span>Absoluta, relativa e acumulada</span></li>
+      <li><b>Medidas e quartis</b><span>Média, mediana, moda e Q1–Q3</span></li>
+      <li><b>7 tipos de gráfico</b><span>Barras, pizza, ogiva, boxplot…</span></li>
+      <li><b>Exporta p/ Excel</b><span>Tabela e respostas editáveis</span></li>
+    </ul>
   </header>
 
   <p class="empty-state" id="emptyState" hidden>Nenhuma tabela importada. Use o botão <b>Importar CSV ou XLSX</b> para começar.</p>
@@ -1457,7 +1559,7 @@ document.getElementById("linkForm").addEventListener("submit", async (e) => {
   const m = url.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/);
   if (!m) { fail("Cole um link do Google Planilhas (docs.google.com/spreadsheets/d/…)."); return; }
   const gid = (url.match(/[#&?]gid=(\d+)/) || [])[1];
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv` + (gid ? `&gid=${gid}` : "");
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv&headers=1` + (gid ? `&gid=${gid}` : "");
   const label = btn.textContent;
   btn.disabled = true; btn.textContent = "Importando…";
   try {
