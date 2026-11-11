@@ -131,7 +131,10 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
+  #bgShader { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.22; }
+  :root[data-theme="dark"] #bgShader { opacity: 0.32; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #bgShader { opacity: 0.32; } }
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
 
   /* ---------- header ---------- */
   header.top { margin-bottom: 28px; }
@@ -263,7 +266,6 @@
     border-right: 1px solid var(--border);
   }
   .segmented button:last-child { border-right: none; }
-  .segmented button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 700; }
   .segmented button:disabled { cursor: not-allowed; opacity: 0.45; }
   .segment-note { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
 
@@ -382,6 +384,49 @@
   table.freqtable tbody td:last-child { border-radius: 0 14px 14px 0; }
   table.freqtable tbody tr:hover td { background: var(--accent-soft); }
 
+  /* segmented control estilo iOS: trilho translúcido, sem bordas, seleção "flutuando" */
+  .segmented {
+    gap: 2px; padding: 3px; border: none; overflow: visible; border-radius: 999px;
+    background: color-mix(in oklab, var(--ink-1) 7%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(14px); backdrop-filter: saturate(180%) blur(14px);
+    box-shadow: inset 0 0 0 0.5px color-mix(in oklab, var(--ink-1) 8%, transparent);
+  }
+  .segmented button {
+    background: transparent; border: none; border-radius: 999px; padding: 9px 18px;
+    font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--ink-2);
+    transition: background .25s cubic-bezier(.4,0,.2,1), color .2s ease, box-shadow .25s ease;
+  }
+  .segmented button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--ink-1); }
+  .segmented button:disabled { opacity: 0.4; }
+
+  /* ---------- vidro sutil (estilo iOS): translúcido, borda de luz fina, sombra suave ---------- */
+  .export-btn, .theme-toggle {
+    background: color-mix(in oklab, var(--surface) 70%, transparent);
+    border: 1px solid color-mix(in oklab, var(--ink-1) 10%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(170%); backdrop-filter: blur(12px) saturate(170%);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 70%, transparent), 0 1px 2px rgba(0,0,0,0.06);
+    transition: transform .25s ease, border-color .15s ease, color .15s ease, background .2s ease;
+  }
+  .export-btn:hover, .theme-toggle:hover { transform: translateY(-1px); background: var(--surface); }
+  /* indicador deslizante: um único "polegar" que anda até o botão selecionado */
+  .segmented { position: relative; isolation: isolate; }
+  .segmented button { position: relative; z-index: 1; }
+  .segmented button[aria-pressed="true"] { color: var(--accent); font-weight: 700; }
+  .seg-thumb {
+    position: absolute; z-index: 0; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 999px; pointer-events: none;
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.10), 0 6px 14px -6px color-mix(in oklab, var(--accent) 55%, transparent);
+  }
+  .seg-thumb.ready { transition: transform .38s cubic-bezier(.32,1.25,.5,1), width .38s cubic-bezier(.32,1.25,.5,1); }
+  :root[data-theme="dark"] .seg-thumb { background: color-mix(in oklab, var(--accent) 28%, var(--surface)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(0,0,0,0.6); }
+  :root[data-theme="dark"] .segmented button[aria-pressed="true"] { color: var(--ink-1); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .seg-thumb { background: color-mix(in oklab, var(--accent) 28%, var(--surface)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(0,0,0,0.6); }
+    :root:not([data-theme="light"]) .segmented button[aria-pressed="true"] { color: var(--ink-1); }
+  }
+  @media (prefers-reduced-motion: reduce) { .seg-thumb.ready { transition: none; } }
+  .segmented button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent); }
+
   @media (max-width: 920px) {
     .main-grid { grid-template-columns: 1fr; }
     .controls { grid-template-columns: 1fr; }
@@ -430,6 +475,7 @@
 
 <div id="tooltip"></div>
 
+<canvas id="bgShader" aria-hidden="true"></canvas>
 <div class="wrap">
   <header class="top">
     <nav class="topbar">
@@ -492,6 +538,7 @@
       <select id="chartSelect"></select>
       <div class="meta-row" id="groupingRow">
         <div class="segmented" id="groupingToggle">
+          <span class="seg-thumb" id="segThumb" aria-hidden="true"></span>
           <button data-mode="raw" aria-pressed="true">Sem intervalo de classe</button>
           <button data-mode="grouped" aria-pressed="false">Com intervalo de classe</button>
         </div>
@@ -777,8 +824,13 @@ function qualFrequency(col) {
   raw.forEach(v => freq.set(v, (freq.get(v) || 0) + 1));
   const arr = [...freq.entries()].map(([label, value]) => ({ label, value }));
   arr.sort((a, b) => b.value - a.value);
-  // respostas que começam com número (ex.: "1 a 3 horas", "6 a 8 horas") ficam em ordem crescente
-  const lead = l => { const m = String(l).trim().match(/^(\d+(?:[.,]\d+)?)/); return m ? parseFloat(m[1].replace(",", ".")) : null; };
+  // respostas que começam com número (ex.: "1 a 3 horas", "mais de 5 horas", "61+") ficam em ordem crescente
+  const lead = l => {
+    const m = String(l).trim().toLowerCase().match(/^(?:(mais de|acima de|mais que|maior que|menos de|até|abaixo de)\s+)?(\d+(?:[.,]\d+)?)/);
+    if (!m) return null;
+    const n = parseFloat(m[2].replace(",", "."));
+    return !m[1] ? n : /^(mais|acima|maior)/.test(m[1]) ? n + 0.5 : n - 0.5;
+  };
   if (arr.length && arr.every(d => lead(d.label) !== null)) arr.sort((a, b) => lead(a.label) - lead(b.label));
   // opções informadas pelo usuário: as sem resposta entram com 0, na ordem do formulário
   const opts = STATE.options[col];
@@ -794,6 +846,42 @@ function isQuantColumn(col) {
   const { valid, raw } = columnNumbers(col);
   return raw.length > 0 && valid.length >= 3 && valid.length / raw.length >= 0.7;
 }
+
+// Perguntas respondidas em faixas ("16 a 30 anos", "mais de 5 horas", "61+"): continuam qualitativas
+// (rótulos originais nos gráficos), mas ogiva e boxplot usam as faixas como classes / pontos médios.
+function rangeClasses(col) {
+  const raw = columnRaw(col);
+  if (!raw.length) return null;
+  const N = "(\\d+(?:[.,]\\d+)?)", num = x => parseFloat(x.replace(",", "."));
+  const parse = label => {
+    const l = String(label).trim().toLowerCase();
+    let m;
+    if ((m = l.match(new RegExp("^" + N + "\\s*(?:a|à|-|–)\\s*" + N)))) return { lo: num(m[1]), hi: num(m[2]) };
+    if ((m = l.match(new RegExp("^(?:mais de|acima de|mais que|maior que)\\s+" + N))) || (m = l.match(new RegExp("^" + N + "\\s*\\+"))) || (m = l.match(new RegExp("^" + N + "(?:\\s*[a-zçãõ]+)?\\s+ou mais")))) return { lo: num(m[1]), up: true };
+    if ((m = l.match(new RegExp("^(?:menos de|até|abaixo de)\\s+" + N)))) return { hi: num(m[1]), down: true };
+    return null;
+  };
+  const counts = new Map();
+  raw.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+  const items = [...counts.entries()].map(([label, freq]) => ({ label, freq, r: parse(label) }));
+  const ok = items.filter(i => i.r);
+  if (ok.length < 2 || ok.reduce((a, i) => a + i.freq, 0) / raw.length < 0.7) return null;
+  const widths = ok.filter(i => i.r.lo !== undefined && i.r.hi !== undefined).map(i => i.r.hi - i.r.lo).sort((a, b) => a - b);
+  const width = widths.length ? widths[Math.floor(widths.length / 2)] : 1;
+  ok.forEach(i => { if (i.r.down) i.r.lo = i.r.hi - width; });
+  ok.sort((a, b) => a.r.lo - b.r.lo);
+  let cum = 0;
+  const classes = ok.map((i, k) => {
+    const next = ok[k + 1];
+    const Ls = next ? next.r.lo : (i.r.up ? i.r.lo + width : i.r.hi);
+    cum += i.freq;
+    return { label: i.label, Li: i.r.lo, Ls, mid: (i.r.lo + Ls) / 2, freq: i.freq, cum };
+  });
+  const mids = [];
+  classes.forEach(c => { for (let k = 0; k < c.freq; k++) mids.push(c.mid); });
+  return { classes, mids, n: cum };
+}
+function isRangeColumn(col) { return !isQuantColumn(col) && rangeClasses(col) !== null; }
 
 /* =================================================================
    6. Color helpers
@@ -1215,9 +1303,10 @@ function renderQualStats(host, freqResult) {
   const { data, total } = freqResult;
   const measures = document.createElement("div");
   measures.className = "measures";
-  const m = modesOf(data.map(d => d.value)); // placeholder not used
-  const topVal = data[0];
-  measures.appendChild(measureTile("Moda", topVal ? topVal.label : "—"));
+  // a lista pode estar em ordem crescente das respostas, então a moda é a(s) de maior frequência
+  const maxFreq = Math.max(0, ...data.map(d => d.value));
+  const modeLabels = data.filter(d => d.value === maxFreq && maxFreq > 0).map(d => d.label);
+  measures.appendChild(measureTile(modeLabels.length > 1 ? "Moda (empate)" : "Moda", modeLabels.length ? modeLabels.join(" / ") : "—"));
   measures.appendChild(measureTile("Nº de categorias", data.length));
   measures.appendChild(measureTile("Respostas (n)", total));
   host.appendChild(measures);
@@ -1288,10 +1377,12 @@ function renderQuantStatsRaw(host, xs, decimals) {
   host.appendChild(note);
 }
 
-function renderQuantStatsGrouped(host, xs, decimals) {
+function renderQuantStatsGrouped(host, xs, decimals, given) {
   clear(host);
   const n = xs.length;
-  const { k, h, classes } = buildClasses(xs, decimals);
+  const { k, h, classes } = given
+    ? { k: given.length, h: given[0].Ls - given[0].Li, classes: given }
+    : buildClasses(xs, decimals);
   const gMean = groupedMean(classes, n);
   const gMedian = groupedMedian(classes, n);
   const gMode = groupedMode(classes);
@@ -1451,17 +1542,29 @@ function populateChartSelect(isQuant, preferred) {
 function onColumnChange() {
   STATE.col = colSelect.value;
   const isQuant = isQuantColumn(STATE.col);
-  typeBadge.textContent = isQuant ? "Quantitativa" : "Qualitativa";
+  const isRange = isRangeColumn(STATE.col);
+  typeBadge.textContent = isQuant ? "Quantitativa" : isRange ? "Qualitativa (faixas)" : "Qualitativa";
   typeBadge.className = "badge " + (isQuant ? "quant" : "qual");
   const nums = columnNumbers(STATE.col);
   validNEl.textContent = isQuant ? `n = ${nums.valid.length} de ${nums.raw.length} respostas válidas` : `n = ${columnRaw(STATE.col).length} respostas`;
   const optsDetails = document.getElementById("optsDetails");
   optsDetails.hidden = isQuant;
   document.getElementById("optsInput").value = (STATE.options[STATE.col] || []).join("\n");
-  populateChartSelect(isQuant, STATE.chartType);
+  populateChartSelect(isQuant || isRange, STATE.chartType);
   updateGroupingUI();
   renderAll();
 }
+
+// move o indicador deslizante até o botão selecionado
+const segThumb = document.getElementById("segThumb");
+function moveSegThumb() {
+  const b = document.querySelector('#groupingToggle button[aria-pressed="true"]');
+  if (!b || !b.offsetWidth) return;
+  segThumb.style.width = b.offsetWidth + "px";
+  segThumb.style.transform = `translateX(${b.offsetLeft}px)`;
+  if (!segThumb.classList.contains("ready")) requestAnimationFrame(() => requestAnimationFrame(() => segThumb.classList.add("ready")));
+}
+window.addEventListener("resize", moveSegThumb);
 
 function updateGroupingUI() {
   const isQuant = isQuantColumn(STATE.col);
@@ -1482,6 +1585,7 @@ function updateGroupingUI() {
   else if (forcesGrouped) groupingNote.textContent = "A ogiva sempre usa a distribuição com intervalo de classe (frequência acumulada).";
   else if (forcesRaw) groupingNote.textContent = STATE.chartType === "box" ? "O boxplot sempre usa os quartis dos dados brutos." : "O gráfico de pontos sempre usa os dados brutos, um ponto por resposta.";
   else groupingNote.textContent = "";
+  moveSegThumb();
 }
 
 function renderAll() {
@@ -1489,6 +1593,14 @@ function renderAll() {
   chartTitle.textContent = STATE.col;
   statsTitle.textContent = "Tabela e medidas";
   statsN.textContent = "";
+
+  if (!isQuant && (STATE.chartType === "box" || STATE.chartType === "ogive") && isRangeColumn(STATE.col)) {
+    const rc = rangeClasses(STATE.col);
+    chartN.textContent = `n = ${rc.n} · faixas tratadas como classes (ponto médio)`;
+    if (STATE.chartType === "box") { renderBoxplot(chartHost, rc.mids); renderBoxplotStats(statsHost, rc.mids, 1); }
+    else { renderOgive(chartHost, rc.classes, rc.n); renderQuantStatsGrouped(statsHost, rc.mids, 1, rc.classes); }
+    return;
+  }
 
   if (!isQuant) {
     const freq = qualFrequency(STATE.col);
@@ -1740,6 +1852,96 @@ document.getElementById("exportStats").addEventListener("click", () => {
 // Abre sem nenhuma tabela carregada; os dados de exemplo só entram pelo link "usar dados de exemplo".
 setEmpty(true);
 
+})();
+
+/* =================================================================
+   14. Fundo animado (WebGL, ruído simplex) — adaptado do componente Velaris, em JS puro
+   ================================================================= */
+(function initBgShader() {
+  const canvas = document.getElementById("bgShader");
+  const gl = canvas.getContext("webgl");
+  if (!gl) { canvas.style.display = "none"; return; }
+  const VERT = "attribute vec2 position; varying vec2 vUv; void main(){ vUv = position*0.5+0.5; gl_Position = vec4(position,0.0,1.0); }";
+  const FRAG = `
+precision highp float;
+varying vec2 vUv;
+uniform vec2 u_resolution; uniform float u_time; uniform float u_grain; uniform vec3 u_colors[4]; uniform vec3 u_bg;
+vec3 permute(vec3 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy)); vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1; i = mod(i, 289.0);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m; m = m*m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}
+void main(){
+  vec2 uv = vUv; float ratio = u_resolution.x / u_resolution.y;
+  vec2 p = uv - 0.5; p.x *= ratio; float t = u_time * 0.1;
+  float n1 = snoise(p * 0.4 + vec2(t * 0.2, -t * 0.3));
+  float n2 = snoise(p * 0.55 + vec2(-t * 0.15, t * 0.25) + n1 * 0.25);
+  float n3 = snoise(p * 0.75 + vec2(t * 0.1, -t * 0.2) + n2 * 0.2);
+  vec3 col = u_bg;
+  float dist = length(p) * 1.5; float vignette = 1.0 - smoothstep(0.3, 1.2, dist);
+  col = mix(col, u_colors[0], smoothstep(-0.2, 0.5, n1) * 0.85);
+  col = mix(col, u_colors[1], smoothstep(-0.1, 0.6, n2) * 0.7);
+  col = mix(col, u_colors[2], smoothstep(-0.3, 0.4, n3) * 0.6);
+  col = mix(col, u_colors[3], smoothstep(0.0, 0.7, n1 * n2) * 0.5);
+  col += u_colors[1] * smoothstep(0.8, 0.0, dist) * 0.3;
+  col = mix(u_bg, col, 0.35 + 0.65 * vignette);
+  float grain = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453 + u_time);
+  col += (grain - 0.5) * u_grain * 0.1;
+  gl_FragColor = vec4(col, 1.0);
+}`;
+  const sh = (type, src) => { const x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); return x; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { canvas.style.display = "none"; return; }
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, "position");
+  gl.enableVertexAttribArray(pos); gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const U = n => gl.getUniformLocation(prog, n);
+  const uRes = U("u_resolution"), uTime = U("u_time"), uGrain = U("u_grain"), uColors = U("u_colors"), uBg = U("u_bg");
+
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+  const PALETTES = {
+    light: { bg: "#f6f5f0", colors: ["#9bb7ff", "#5b86f0", "#2454d1", "#c9d8ff"] },
+    dark:  { bg: "#101014", colors: ["#2a4fb8", "#3a63d6", "#7396ff", "#0f1b45"] }
+  };
+  const isDark = () => {
+    const t = document.documentElement.getAttribute("data-theme");
+    return t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  };
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SCALE = 0.5; // ruído suave: renderiza em meia resolução
+  const resize = () => {
+    canvas.width = Math.max(1, Math.round(innerWidth * SCALE));
+    canvas.height = Math.max(1, Math.round(innerHeight * SCALE));
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  };
+  const draw = t => {
+    const pal = PALETTES[isDark() ? "dark" : "light"];
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uTime, t * 0.001 * 1.2);
+    gl.uniform1f(uGrain, 0.3);
+    gl.uniform3f(uBg, ...hex(pal.bg));
+    gl.uniform3fv(uColors, new Float32Array(pal.colors.flatMap(hex)));
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+  resize();
+  window.addEventListener("resize", () => { resize(); if (reduced) draw(0); });
+  if (reduced) { draw(0); return; }
+  const loop = t => { draw(t); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
