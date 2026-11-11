@@ -162,11 +162,17 @@
     font-size: clamp(44px, 10.5vw, 148px); line-height: 0.92; letter-spacing: -0.04em;
   }
   .tag {
-    position: absolute; top: -6px; right: 4%; transform: rotate(14deg);
+    position: absolute; top: -6px; right: 4%; --rot: 14deg; transform: rotate(var(--rot));
+    animation: tag-float 4.2s ease-in-out infinite;
     font-family: var(--font-mono); font-size: clamp(10px, 1.2vw, 14px); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
     background: #fff; color: var(--hero-2); padding: 9px 16px; border-radius: 999px; white-space: nowrap;
     box-shadow: 0 10px 24px -10px rgba(0,0,0,0.5);
   }
+  @keyframes tag-float {
+    0%, 100% { transform: translateY(0) rotate(var(--rot)); box-shadow: 0 10px 24px -10px rgba(0,0,0,0.5); }
+    50% { transform: translateY(-12px) rotate(calc(var(--rot) + 2.5deg)); box-shadow: 0 24px 30px -14px rgba(0,0,0,0.45); }
+  }
+  @media (prefers-reduced-motion: reduce) { .tag { animation: none; } }
   .spark { position: absolute; color: rgba(255,255,255,0.85); font-size: 22px; line-height: 1; pointer-events: none; }
   .spark.s1 { left: 9%; top: 52%; }
   .spark.s2 { right: 9%; top: 24%; font-size: 16px; }
@@ -438,7 +444,7 @@
     .wrap { padding: 24px 16px 56px; }
     .hero { padding: 32px 22px 24px; border-radius: 30px; min-height: 0; }
     h1 { font-size: clamp(30px, 10vw, 64px); }
-    .tag { position: static; display: inline-block; transform: rotate(-4deg); margin-top: 14px; }
+    .tag { position: static; display: inline-block; --rot: -4deg; margin-top: 14px; }
     .hero-card, .hero-left { width: 100%; max-width: none; }
     .pill { padding: 8px 12px; font-size: 10px; }
     .topbar .pill:first-child { display: none; }
