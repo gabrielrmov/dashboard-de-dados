@@ -1758,6 +1758,19 @@ function exportNodeAsPng(node, filename) {
     onclone: (clonedDoc, clonedNode) => {
       clonedDoc.documentElement.setAttribute("data-theme", "light");
       clonedNode.classList.add("export-transparent");
+      // html2canvas não entende color-mix()/oklab (o navegador devolve esses valores nas cores calculadas)
+      // e aborta a exportação; troca por "sem cor" só no clone usado pra gerar a imagem.
+      const bad = v => /oklab|oklch|color\(/.test(v);
+      const win = clonedDoc.defaultView;
+      [clonedNode, ...clonedNode.querySelectorAll("*")].forEach(el => {
+        if (el instanceof win.SVGElement && el.tagName.toLowerCase() !== "svg") return;
+        const cs = win.getComputedStyle(el);
+        ["backgroundColor", "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "outlineColor", "color"].forEach(prop => {
+          if (bad(cs[prop])) el.style[prop] = prop === "color" ? "#17161a" : "transparent";
+        });
+        if (bad(cs.boxShadow)) el.style.boxShadow = "none";
+        if (bad(cs.backgroundImage)) el.style.backgroundImage = "none";
+      });
     }
   }).then(canvas => {
     download(canvas.toDataURL("image/png"), filename);
