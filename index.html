@@ -1777,14 +1777,7 @@ function exportNodeAsPng(node, filename, opts) {
     onclone: (clonedDoc, clonedNode) => {
       clonedDoc.documentElement.setAttribute("data-theme", "light");
       clonedNode.classList.add("export-transparent");
-      // exportação só do gráfico: sem nenhum texto (títulos, eixos, rótulos, valores, legenda)
-      if (opts.textless) {
-        clonedNode.querySelectorAll("text, .legend").forEach(el => el.remove());
-        const walker = clonedDoc.createTreeWalker(clonedNode, 4 /* NodeFilter.SHOW_TEXT */);
-        const texts = [];
-        while (walker.nextNode()) texts.push(walker.currentNode);
-        texts.forEach(n => { n.nodeValue = ""; });
-      }
+      // exportação só do gráfico (sem o título e o "n =" do cartão): ver opts.trim
       // html2canvas não entende color-mix()/oklab (o navegador devolve esses valores nas cores calculadas)
       // e aborta a exportação; troca por "sem cor" só no clone usado pra gerar a imagem.
       const bad = v => /oklab|oklch|color\(/.test(v);
@@ -1800,7 +1793,7 @@ function exportNodeAsPng(node, filename, opts) {
       });
     }
   }).then(canvas => {
-    download((opts.textless ? trimTransparent(canvas) : canvas).toDataURL("image/png"), filename);
+    download((opts.trim ? trimTransparent(canvas) : canvas).toDataURL("image/png"), filename);
   }).catch(() => {
     alert("Não consegui gerar a imagem. Tente novamente ou use uma captura de tela.");
   }).finally(() => {
@@ -1811,7 +1804,7 @@ function exportNodeAsPng(node, filename, opts) {
 }
 
 document.getElementById("exportChart").addEventListener("click", () => {
-  exportNodeAsPng(document.getElementById("chartHost"), "grafico.png", { textless: true });
+  exportNodeAsPng(document.getElementById("chartHost"), "grafico.png", { trim: true });
 });
 function requireXLSX() {
   if (typeof XLSX !== "undefined") return true;
