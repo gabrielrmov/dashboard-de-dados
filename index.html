@@ -1729,7 +1729,26 @@ function download(dataUrl, filename) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-function exportNodeAsPng(node, filename) {
+// recorta as margens transparentes (sobra de onde ficavam os textos) deixando só o desenho
+function trimTransparent(canvas) {
+  const ctx = canvas.getContext("2d");
+  const { width: w, height: h } = canvas;
+  const d = ctx.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (d[(y * w + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return canvas;
+  const pad = 24;
+  x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(w - 1, x1 + pad); y1 = Math.min(h - 1, y1 + pad);
+  const out = document.createElement("canvas");
+  out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+  out.getContext("2d").drawImage(canvas, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+  return out;
+}
+
+function exportNodeAsPng(node, filename, opts) {
+  opts = opts || {};
   if (typeof html2canvas === "undefined") {
     alert("Não consegui carregar a biblioteca de exportação (sem conexão com a internet). Tente novamente com internet disponível, ou use uma captura de tela.");
     return;
@@ -1758,6 +1777,14 @@ function exportNodeAsPng(node, filename) {
     onclone: (clonedDoc, clonedNode) => {
       clonedDoc.documentElement.setAttribute("data-theme", "light");
       clonedNode.classList.add("export-transparent");
+      // exportação só do gráfico: sem nenhum texto (títulos, eixos, rótulos, valores, legenda)
+      if (opts.textless) {
+        clonedNode.querySelectorAll("text, .legend").forEach(el => el.remove());
+        const walker = clonedDoc.createTreeWalker(clonedNode, 4 /* NodeFilter.SHOW_TEXT */);
+        const texts = [];
+        while (walker.nextNode()) texts.push(walker.currentNode);
+        texts.forEach(n => { n.nodeValue = ""; });
+      }
       // html2canvas não entende color-mix()/oklab (o navegador devolve esses valores nas cores calculadas)
       // e aborta a exportação; troca por "sem cor" só no clone usado pra gerar a imagem.
       const bad = v => /oklab|oklch|color\(/.test(v);
@@ -1773,7 +1800,7 @@ function exportNodeAsPng(node, filename) {
       });
     }
   }).then(canvas => {
-    download(canvas.toDataURL("image/png"), filename);
+    download((opts.textless ? trimTransparent(canvas) : canvas).toDataURL("image/png"), filename);
   }).catch(() => {
     alert("Não consegui gerar a imagem. Tente novamente ou use uma captura de tela.");
   }).finally(() => {
@@ -1784,8 +1811,7 @@ function exportNodeAsPng(node, filename) {
 }
 
 document.getElementById("exportChart").addEventListener("click", () => {
-  const card = document.getElementById("chartCard");
-  exportNodeAsPng(card, "grafico.png");
+  exportNodeAsPng(document.getElementById("chartHost"), "grafico.png", { textless: true });
 });
 function requireXLSX() {
   if (typeof XLSX !== "undefined") return true;
